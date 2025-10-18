@@ -1,0 +1,1 @@
+# Agents package for Bloom AI farming assistant
