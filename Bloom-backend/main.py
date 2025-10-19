@@ -3,7 +3,7 @@ import json
 import uuid
 import logging
 import asyncio
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
@@ -14,6 +14,8 @@ from google.genai.types import Content, Part
 from pydantic import BaseModel
 from typing import Optional
 from agents.mainagent import root_agent
+import PyPDF2
+import io
 
 # Load environment variables
 load_dotenv()
@@ -36,14 +38,24 @@ app.add_middleware(
 # Initialize session service
 session_service = InMemorySessionService()
 
+# Store for uploaded PDF content (in production, use a proper database)
+pdf_context_store = {}
+
 class ChatRequest(BaseModel):
     message: str
     user_id: str = "default_user"
     session_id: Optional[str] = None
+    pdf_context_ids: Optional[list[str]] = None
 
 class HealthResponse(BaseModel):
     status: str
     version: str
+
+class PDFUploadResponse(BaseModel):
+    success: bool
+    file_id: str
+    filename: str
+    text_length: int
 
 @app.post("/chat/stream")
 async def chat_stream(request: ChatRequest):
@@ -74,10 +86,23 @@ async def chat_stream(request: ChatRequest):
                 session_service=session_service
             )
 
+            # Prepare message with PDF context if available
+            message_text = request.message
+            if request.pdf_context_ids:
+                pdf_contexts = []
+                for pdf_id in request.pdf_context_ids:
+                    if pdf_id in pdf_context_store:
+                        pdf_data = pdf_context_store[pdf_id]
+                        pdf_contexts.append(f"--- Content from {pdf_data['filename']} ---\n{pdf_data['content']}\n--- End of {pdf_data['filename']} ---\n")
+                
+                if pdf_contexts:
+                    context_text = "\n".join(pdf_contexts)
+                    message_text = f"Context from uploaded documents:\n{context_text}\n\nUser question: {request.message}"
+
             async for event in runner.run_async(
                 user_id=request.user_id,
                 session_id=session_id,
-                new_message=Content(role='user', parts=[Part(text=request.message)]),
+                new_message=Content(role='user', parts=[Part(text=message_text)]),
                 run_config=RunConfig(streaming_mode=StreamingMode.SSE),
             ):
                 # Check if this event contains a function call
@@ -113,6 +138,46 @@ async def chat_stream(request: ChatRequest):
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "Connection": "keep-alive"}
     )
+
+@app.post("/upload-pdf", response_model=PDFUploadResponse)
+async def upload_pdf(file: UploadFile = File(...)):
+    try:
+        # Validate file type
+        if file.content_type != "application/pdf":
+            raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+        
+        # Read file content
+        content = await file.read()
+        
+        # Extract text from PDF
+        pdf_reader = PyPDF2.PdfReader(io.BytesIO(content))
+        text_content = ""
+        
+        for page in pdf_reader.pages:
+            text_content += page.extract_text() + "\n"
+        
+        # Generate unique file ID
+        file_id = str(uuid.uuid4())
+        
+        # Store the extracted text (in production, use proper database)
+        pdf_context_store[file_id] = {
+            "filename": file.filename,
+            "content": text_content,
+            "upload_time": asyncio.get_event_loop().time()
+        }
+        
+        logger.info(f"📄 PDF processed: {file.filename} ({len(text_content)} characters)")
+        
+        return PDFUploadResponse(
+            success=True,
+            file_id=file_id,
+            filename=file.filename or "unknown.pdf",
+            text_length=len(text_content)
+        )
+        
+    except Exception as e:
+        logger.error(f"Error processing PDF: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error processing PDF: {str(e)}")
 
 @app.get("/health", response_model=HealthResponse)
 async def health():

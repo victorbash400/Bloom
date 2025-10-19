@@ -4,11 +4,18 @@ import React, { useState } from 'react';
 import ChatSection from '../components/ChatSection';
 import Sidebar from '../components/Sidebar';
 
+interface Attachment {
+  id: string;
+  name: string;
+  type: string;
+}
+
 interface Message {
   role: 'user' | 'assistant' | 'tool-indicator';
   content: string;
   toolName?: string;
   toolStatus?: 'in-progress' | 'done';
+  attachments?: Attachment[];
 }
 
 const API_BASE_URL = 'http://localhost:8000';
@@ -19,9 +26,9 @@ export default function Home() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [streamingContent, setStreamingContent] = useState<string>('');
 
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = async (content: string, pdfContextIds?: string[], attachments?: Attachment[]) => {
     console.log("handleSendMessage called");
-    const userMessage: Message = { role: 'user', content };
+    const userMessage: Message = { role: 'user', content, attachments };
     setMessages(prev => {
       console.log("Adding user message, prev messages:", prev.length);
       return [...prev, userMessage];
@@ -39,6 +46,7 @@ export default function Home() {
           message: content,
           user_id: 'default_user',
           session_id: sessionId,
+          pdf_context_ids: pdfContextIds,
         }),
       });
 

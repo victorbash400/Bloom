@@ -3,16 +3,23 @@ import ChatBubble from './ChatBubble';
 import ChatInput from './ChatInput';
 import ToolIndicator from './ToolIndicator';
 
+interface Attachment {
+  id: string;
+  name: string;
+  type: string;
+}
+
 interface Message {
   role: 'user' | 'assistant' | 'tool-indicator';
   content: string;
   toolName?: string;
   toolStatus?: 'in-progress' | 'done';
+  attachments?: Attachment[];
 }
 
 interface ChatSectionProps {
   messages: Message[];
-  onSendMessage: (message: string) => void;
+  onSendMessage: (message: string, pdfContextIds?: string[], attachments?: Attachment[]) => void;
   isLoading?: boolean;
 }
 
@@ -82,6 +89,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({
                   key={index}
                   role={message.role}
                   content={message.content}
+                  attachments={message.attachments}
                 />
               )
             ))}

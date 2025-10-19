@@ -1,8 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
+import { CirclePlus } from 'lucide-react';
+
+interface Attachment {
+  id: string;
+  name: string;
+  type: string;
+}
 
 interface ChatInputProps {
-  onSendMessage: (message: string) => void;
+  onSendMessage: (message: string, pdfContextIds?: string[], attachments?: Attachment[]) => void;
   disabled?: boolean;
 }
 
@@ -10,6 +17,15 @@ interface Agent {
   id: string;
   name: string;
   active: boolean;
+}
+
+interface UploadedFile {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  status: 'uploading' | 'processing' | 'ready' | 'error';
+  backendId?: string; // ID returned from backend after successful upload
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({
@@ -23,14 +39,30 @@ const ChatInput: React.FC<ChatInputProps> = ({
     { id: 'farm', name: 'Farm Agent', active: false },
     { id: 'market', name: 'Market Agent', active: false },
   ]);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim() && !disabled) {
-      onSendMessage(input.trim());
+      // Get ready PDF context IDs and attachment info
+      const readyFiles = uploadedFiles.filter(f => f.status === 'ready' && f.backendId);
+      const pdfContextIds = readyFiles.map(f => f.backendId!);
+      const attachments: Attachment[] = readyFiles.map(f => ({
+        id: f.id,
+        name: f.name,
+        type: f.type
+      }));
+
+      onSendMessage(
+        input.trim(),
+        pdfContextIds.length > 0 ? pdfContextIds : undefined,
+        attachments.length > 0 ? attachments : undefined
+      );
       setInput('');
+      setUploadedFiles([]); // Clear uploaded files after sending
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
       }
@@ -53,6 +85,70 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const activeAgentsCount = agents.filter(agent => agent.active).length;
   const activeAgentNames = agents.filter(agent => agent.active).map(agent => agent.name);
 
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+
+      // Only allow PDF files for now
+      if (file.type !== 'application/pdf') {
+        alert('Only PDF files are supported at the moment.');
+        continue;
+      }
+
+      const fileId = Date.now().toString() + i;
+      const uploadedFile: UploadedFile = {
+        id: fileId,
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        status: 'uploading'
+      };
+
+      setUploadedFiles(prev => [...prev, uploadedFile]);
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // Update status to processing
+        setUploadedFiles(prev => prev.map(f =>
+          f.id === fileId ? { ...f, status: 'processing' } : f
+        ));
+
+        const response = await fetch('http://localhost:8000/upload-pdf', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          setUploadedFiles(prev => prev.map(f =>
+            f.id === fileId ? { ...f, status: 'ready', backendId: result.file_id } : f
+          ));
+        } else {
+          throw new Error('Upload failed');
+        }
+      } catch (error) {
+        console.error('Upload error:', error);
+        setUploadedFiles(prev => prev.map(f =>
+          f.id === fileId ? { ...f, status: 'error' } : f
+        ));
+      }
+    }
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const removeFile = (fileId: string) => {
+    setUploadedFiles(prev => prev.filter(f => f.id !== fileId));
+  };
+
   // Close modal when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -72,6 +168,63 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
   return (
     <div className="w-full max-w-lg mx-auto font-sans relative">
+      {/* File indicators */}
+      {uploadedFiles.length > 0 && (
+        <div className="mb-3 space-y-2">
+          {uploadedFiles.map((file) => (
+            <div key={file.id} className="flex items-center justify-between bg-white rounded-lg p-3 shadow-sm border border-gray-200">
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0">
+                  <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(1)} MB</p>
+                    <div className="flex items-center gap-1">
+                      {file.status === 'uploading' && (
+                        <>
+                          <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                          <span className="text-xs text-blue-600">Uploading...</span>
+                        </>
+                      )}
+                      {file.status === 'processing' && (
+                        <>
+                          <div className="w-3 h-3 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+                          <span className="text-xs text-yellow-600">Processing...</span>
+                        </>
+                      )}
+                      {file.status === 'ready' && (
+                        <>
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                          <span className="text-xs text-green-600">Ready</span>
+                        </>
+                      )}
+                      {file.status === 'error' && (
+                        <>
+                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                          <span className="text-xs text-red-600">Error</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => removeFile(file.id)}
+                className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="relative rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] pt-[20px] px-[2px] pb-[2px]" style={{ backgroundColor: '#00311e' }}>
         <div className="absolute top-2 left-0 right-0 flex items-center justify-center">
           <div className="flex items-center gap-2 text-xs text-white font-medium">
@@ -122,26 +275,35 @@ const ChatInput: React.FC<ChatInputProps> = ({
               {/* Upload button */}
               <button
                 type="button"
-                className="flex items-center justify-center p-1 hover:bg-gray-100 rounded-lg transition-colors duration-200 group"
-                title="Upload files"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center justify-center p-0.5 hover:bg-gray-100 rounded-md transition-colors duration-200 group"
+                title="Upload PDF files"
               >
-                <svg className="w-5 h-5 text-gray-500 group-hover:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                </svg>
+                <CirclePlus className="w-5 h-5 text-gray-500 group-hover:text-gray-700" />
               </button>
+
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf"
+                multiple
+                onChange={handleFileUpload}
+                className="hidden"
+              />
 
               {/* Agents button */}
               <button
                 type="button"
                 onClick={() => setShowAgentsModal(!showAgentsModal)}
-                className="relative flex items-center justify-center p-1 hover:bg-gray-100 rounded-lg transition-colors duration-200 group"
+                className="relative flex items-center justify-center p-0.5 hover:bg-gray-100 rounded-md transition-colors duration-200 group"
                 title="Agents"
               >
                 <Image
                   src="/agents.svg"
                   alt="Agents"
-                  width={18}
-                  height={18}
+                  width={20}
+                  height={20}
                   className="opacity-60 group-hover:opacity-80"
                 />
                 {activeAgentsCount > 0 && (
