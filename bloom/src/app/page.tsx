@@ -18,6 +18,7 @@ export default function Home() {
   const [streamingContent, setStreamingContent] = useState<string>('');
 
   const handleSendMessage = async (content: string) => {
+    console.log("handleSendMessage called");
     const userMessage: Message = { role: 'user', content };
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
@@ -45,14 +46,15 @@ export default function Home() {
         throw new Error('No reader available');
       }
 
-      let accumulatedContent = '';
-      
       // Add empty assistant message that we'll update
       setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
 
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          setIsLoading(false);
+          break;
+        }
 
         const chunk = new TextDecoder().decode(value);
         const lines = chunk.split('\n');
@@ -65,26 +67,13 @@ export default function Home() {
               if (data.type === 'session') {
                 setSessionId(data.session_id);
               } else if (data.type === 'content') {
-                if (data.is_final) {
-                  // Final response - set the complete content
-                  accumulatedContent = data.content;
-                  setMessages(prev => {
-                    const newMessages = [...prev];
-                    newMessages[newMessages.length - 1].content = accumulatedContent;
-                    return newMessages;
-                  });
-                } else {
-                  // Streaming chunk - accumulate content
-                  accumulatedContent += data.content;
-                  setMessages(prev => {
-                    const newMessages = [...prev];
-                    newMessages[newMessages.length - 1].content = accumulatedContent;
-                    return newMessages;
-                  });
-                }
+                setMessages(prev => {
+                  const newMessages = [...prev];
+                  newMessages[newMessages.length - 1].content += data.content;
+                  return newMessages;
+                });
               } else if (data.type === 'done') {
                 setIsLoading(false);
-                setStreamingContent('');
               } else if (data.type === 'error') {
                 console.error('Streaming error:', data.error);
                 setMessages(prev => {

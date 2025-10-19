@@ -39,6 +39,8 @@ const ChatSection: React.FC<ChatSectionProps> = ({
     }
   }, [messages, isLoading]);
 
+  console.log("Rendering messages:", messages);
+
   const hasMessages = messages.length > 0;
 
   if (!hasMessages) {
