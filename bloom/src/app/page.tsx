@@ -20,7 +20,10 @@ export default function Home() {
   const handleSendMessage = async (content: string) => {
     console.log("handleSendMessage called");
     const userMessage: Message = { role: 'user', content };
-    setMessages(prev => [...prev, userMessage]);
+    setMessages(prev => {
+      console.log("Adding user message, prev messages:", prev.length);
+      return [...prev, userMessage];
+    });
     setIsLoading(true);
     setStreamingContent('');
 
@@ -47,7 +50,10 @@ export default function Home() {
       }
 
       // Add empty assistant message that we'll update
-      setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+      setMessages(prev => {
+        console.log("Adding empty assistant message, prev messages:", prev.length);
+        return [...prev, { role: 'assistant', content: '' }];
+      });
 
       while (true) {
         const { done, value } = await reader.read();
@@ -63,13 +69,16 @@ export default function Home() {
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6));
-              
+
               if (data.type === 'session') {
                 setSessionId(data.session_id);
               } else if (data.type === 'content') {
+                console.log("Received content chunk:", data.content);
                 setMessages(prev => {
+                  console.log("Updating message content, current length:", prev[prev.length - 1]?.content?.length || 0);
                   const newMessages = [...prev];
                   newMessages[newMessages.length - 1].content += data.content;
+                  console.log("New content length:", newMessages[newMessages.length - 1].content.length);
                   return newMessages;
                 });
               } else if (data.type === 'done') {
@@ -91,9 +100,9 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Error sending message:', error);
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: 'Sorry, I\'m having trouble connecting. Please make sure the backend server is running on port 8000.' 
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: 'Sorry, I\'m having trouble connecting. Please make sure the backend server is running on port 8000.'
       }]);
       setIsLoading(false);
     }

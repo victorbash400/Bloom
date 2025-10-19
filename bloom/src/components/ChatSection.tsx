@@ -30,7 +30,9 @@ const ChatSection: React.FC<ChatSectionProps> = ({
       }
     `;
     document.head.appendChild(style);
-    return () => document.head.removeChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
   }, []);
 
   useEffect(() => {
@@ -39,7 +41,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({
     }
   }, [messages, isLoading]);
 
-  console.log("Rendering messages:", messages);
+  // console.log("Rendering messages:", messages);
 
   const hasMessages = messages.length > 0;
 
@@ -51,9 +53,9 @@ const ChatSection: React.FC<ChatSectionProps> = ({
           <h1 className="text-4xl font-bold text-gray-800 mb-2">Bloom</h1>
           <p className="text-gray-600">Your AI assistant is ready to help</p>
         </div>
-        <ChatInput 
-          onSendMessage={onSendMessage} 
-          disabled={isLoading} 
+        <ChatInput
+          onSendMessage={onSendMessage}
+          disabled={isLoading}
         />
       </div>
     );
@@ -72,13 +74,13 @@ const ChatSection: React.FC<ChatSectionProps> = ({
                 content={message.content}
               />
             ))}
-            
+
             {isLoading && (
               <div className="mb-8">
                 <div className="flex items-start space-x-3">
                   <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center">
-                    <div 
-                      className="rounded-full bg-green-600" 
+                    <div
+                      className="rounded-full bg-green-600"
                       style={{
                         width: '8px',
                         height: '8px',
@@ -92,12 +94,12 @@ const ChatSection: React.FC<ChatSectionProps> = ({
           </div>
         </div>
       </div>
-      
+
       <div className="pb-4">
         <div className="max-w-2xl mx-auto">
-          <ChatInput 
-            onSendMessage={onSendMessage} 
-            disabled={isLoading} 
+          <ChatInput
+            onSendMessage={onSendMessage}
+            disabled={isLoading}
           />
         </div>
       </div>

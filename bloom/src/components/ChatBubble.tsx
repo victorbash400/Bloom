@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 
 interface ChatBubbleProps {
   role: 'user' | 'assistant';
@@ -21,10 +22,8 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ role, content }) => {
   return (
     <div className="mb-8">
       <div className="w-full text-gray-900">
-        <div className="text-base font-normal text-left" style={{ lineHeight: '1.7' }}>
-          <div className="text-left mb-4">
-            <p>{content}</p>
-          </div>
+        <div className="text-base font-normal text-left prose prose-gray max-w-none" style={{ lineHeight: '1.7' }}>
+          <ReactMarkdown>{content}</ReactMarkdown>
         </div>
       </div>
     </div>
