@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from 'react';
+import Image from 'next/image';
 import ChatBubble from './ChatBubble';
 import ChatInput from './ChatInput';
 import ToolIndicator from './ToolIndicator';
@@ -56,9 +57,28 @@ const ChatSection: React.FC<ChatSectionProps> = ({
   const hasMessages = messages.length > 0;
 
   if (!hasMessages) {
-    // Welcome state - input centered
+    // Welcome state - input centered with background image
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-gray-50">
+      <div
+        className="h-screen flex flex-col items-center justify-center relative"
+        style={{
+          backgroundImage: 'url(/Welcome.jpeg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        {/* Top left logo and name */}
+        <div className="absolute top-6 left-6 flex items-end gap-3">
+          <Image
+            src="/bloom_logo.svg"
+            alt="Bloom Logo"
+            width={32}
+            height={32}
+          />
+          <span className="text-xl font-bold text-gray-800">Bloom</span>
+        </div>
+
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">Bloom</h1>
           <p className="text-gray-600">Your AI assistant is ready to help</p>
@@ -71,10 +91,21 @@ const ChatSection: React.FC<ChatSectionProps> = ({
     );
   }
 
-  // Chat state - normal layout
+  // Chat state - normal layout with white background
   return (
-    <div className="h-screen flex flex-col">
-      <div ref={chatContainerRef} className="flex-1 overflow-y-auto pt-16">
+    <div className="h-screen flex flex-col bg-white relative">
+      {/* Top left logo and name for chat state */}
+      <div className="absolute top-6 left-6 flex items-end gap-3 z-10">
+        <Image
+          src="/bloom_logo.svg"
+          alt="Bloom Logo"
+          width={28}
+          height={28}
+        />
+        <span className="text-lg font-bold text-gray-800">Bloom</span>
+      </div>
+
+      <div ref={chatContainerRef} className="flex-1 overflow-y-auto pt-16 bg-white">
         <div className="max-w-2xl mx-auto px-8">
           <div className="space-y-8">
             {messages.map((message, index) => (
@@ -115,7 +146,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({
         </div>
       </div>
 
-      <div className="pb-4">
+      <div className="pb-4 bg-white">
         <div className="max-w-2xl mx-auto">
           <ChatInput
             onSendMessage={onSendMessage}
