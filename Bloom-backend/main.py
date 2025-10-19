@@ -105,24 +105,68 @@ async def chat_stream(request: ChatRequest):
                 new_message=Content(role='user', parts=[Part(text=message_text)]),
                 run_config=RunConfig(streaming_mode=StreamingMode.SSE),
             ):
-                # Check if this event contains a function call
+                # Handle different event types from ADK multi-agent system
+                
+                # Check for agent delegation (when sub-agent starts working)
+                if hasattr(event, 'agent_name') and event.agent_name != 'bloom_main_agent':
+                    agent_name = None
+                    agent_display = None
+                    
+                    if 'planner' in event.agent_name.lower():
+                        agent_name = 'planner'
+                        agent_display = 'Planner Agent'
+                    elif 'farm' in event.agent_name.lower():
+                        agent_name = 'farm' 
+                        agent_display = 'Farm Agent'
+                    elif 'market' in event.agent_name.lower():
+                        agent_name = 'market'
+                        agent_display = 'Market Agent'
+                    
+                    if agent_name:
+                        agent_data = {
+                            'type': 'agent_working',
+                            'agent_name': agent_name,
+                            'agent_display': agent_display
+                        }
+                        yield f"data: {json.dumps(agent_data)}\n\n"
+                        logger.info(f"🤖 Sub-agent working: {agent_display}")
+
+                # Handle content from agents
                 if event.content and event.content.parts:
                     for part in event.content.parts:
-                        # Check if this part is a function call
+                        # Check if this part is a function call (tool usage)
                         if hasattr(part, 'function_call') and part.function_call:
                             tool_name = part.function_call.name
                             tool_data = {
                                 'type': 'tool_call',
-                                'tool_name': tool_name,
+                                'tool_name': tool_name
                             }
                             yield f"data: {json.dumps(tool_data)}\n\n"
                             logger.info(f"🔧 Tool call detected: {tool_name}")
+                            
                         elif hasattr(part, 'text') and part.text and event.partial:
                             # Regular text content
                             content = part.text
+                            
+                            # Determine which agent is responding
+                            agent_name = None
+                            agent_display = None
+                            if hasattr(event, 'agent_name') and event.agent_name != 'bloom_main_agent':
+                                if 'planner' in event.agent_name.lower():
+                                    agent_name = 'planner'
+                                    agent_display = 'Planner Agent'
+                                elif 'farm' in event.agent_name.lower():
+                                    agent_name = 'farm'
+                                    agent_display = 'Farm Agent' 
+                                elif 'market' in event.agent_name.lower():
+                                    agent_name = 'market'
+                                    agent_display = 'Market Agent'
+                            
                             chunk_data = {
                                 'type': 'content',
                                 'content': content,
+                                'agent_name': agent_name,
+                                'agent_display': agent_display
                             }
                             yield f"data: {json.dumps(chunk_data)}\n\n"
             

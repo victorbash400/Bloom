@@ -3,6 +3,8 @@ import Image from 'next/image';
 import ChatBubble from './ChatBubble';
 import ChatInput from './ChatInput';
 import ToolIndicator from './ToolIndicator';
+import AgentIndicator from './AgentIndicator';
+import AgentResponseWrapper from './AgentResponseWrapper';
 
 interface Attachment {
   id: string;
@@ -11,10 +13,12 @@ interface Attachment {
 }
 
 interface Message {
-  role: 'user' | 'assistant' | 'tool-indicator';
+  role: 'user' | 'assistant' | 'tool-indicator' | 'agent-working';
   content: string;
   toolName?: string;
   toolStatus?: 'in-progress' | 'done';
+  agentName?: string;
+  agentDisplay?: string;
   attachments?: Attachment[];
 }
 
@@ -108,22 +112,49 @@ const ChatSection: React.FC<ChatSectionProps> = ({
       <div ref={chatContainerRef} className="flex-1 overflow-y-auto pt-16 bg-white">
         <div className="max-w-2xl mx-auto px-8">
           <div className="space-y-8">
-            {messages.map((message, index) => (
-              message.role === 'tool-indicator' ? (
-                <ToolIndicator
-                  key={index}
-                  toolName={message.toolName}
-                  toolStatus={message.toolStatus}
-                />
-              ) : (
-                <ChatBubble
-                  key={index}
-                  role={message.role}
-                  content={message.content}
-                  attachments={message.attachments}
-                />
-              )
-            ))}
+            {messages.map((message, index) => {
+              if (message.role === 'tool-indicator') {
+                return (
+                  <ToolIndicator
+                    key={index}
+                    toolName={message.toolName}
+                    toolStatus={message.toolStatus}
+                  />
+                );
+              } else if (message.role === 'agent-working') {
+                return (
+                  <AgentIndicator
+                    key={index}
+                    agentName={message.agentName}
+                    agentDisplay={message.agentDisplay}
+                    isWorking={true}
+                  />
+                );
+              } else if (message.role === 'assistant') {
+                return (
+                  <AgentResponseWrapper
+                    key={index}
+                    agentName={message.agentName}
+                    agentDisplay={message.agentDisplay}
+                  >
+                    <ChatBubble
+                      role={message.role}
+                      content={message.content}
+                      attachments={message.attachments}
+                    />
+                  </AgentResponseWrapper>
+                );
+              } else {
+                return (
+                  <ChatBubble
+                    key={index}
+                    role={message.role}
+                    content={message.content}
+                    attachments={message.attachments}
+                  />
+                );
+              }
+            })}
 
             {isLoading && (
               <div className="mb-8">

@@ -11,10 +11,12 @@ interface Attachment {
 }
 
 interface Message {
-  role: 'user' | 'assistant' | 'tool-indicator';
+  role: 'user' | 'assistant' | 'tool-indicator' | 'agent-working';
   content: string;
   toolName?: string;
   toolStatus?: 'in-progress' | 'done';
+  agentName?: string;
+  agentDisplay?: string;
   attachments?: Attachment[];
 }
 
@@ -82,33 +84,63 @@ export default function Home() {
 
               if (data.type === 'session') {
                 setSessionId(data.session_id);
-              } else if (data.type === 'tool_call') {
-                // Tool is being called - stop current message, add tool indicator, and create new message
+              } else if (data.type === 'agent_working') {
+                // Agent is working - add agent working indicator and create new message for agent response
                 setMessages(prev => {
                   const newMessages = [...prev];
                   
-                  // Stop streaming on the current assistant message
-                  const lastAssistantIndex = newMessages.findIndex((msg, index) => 
-                    msg.role === 'assistant' && index === newMessages.length - 1
-                  );
-                  
-                  // Add tool indicator
+                  // Add agent working indicator
                   newMessages.push({
-                    role: 'tool-indicator',
+                    role: 'agent-working',
                     content: '',
-                    toolName: data.tool_name,
-                    toolStatus: 'in-progress'
+                    agentName: data.agent_name,
+                    agentDisplay: data.agent_display
                   });
                   
-                  // Add NEW assistant message for post-tool content
+                  // Add NEW assistant message for agent response
                   newMessages.push({
                     role: 'assistant',
-                    content: ''
+                    content: '',
+                    agentName: data.agent_name,
+                    agentDisplay: data.agent_display
                   });
                   
                   return newMessages;
                 });
-              } else if (data.type === 'content') {
+              } else if (data.type === 'tool_call') {
+                                                    // Regular tool is being called - add tool indicator
+                                                    setMessages(prev => {
+                                                      const newMessages = [...prev];
+                                                      
+                                                      // Add tool indicator
+                                                      newMessages.push({
+                                                        role: 'tool-indicator',
+                                                        content: '',
+                                                        toolName: data.tool_name,
+                                                        toolStatus: 'in-progress'
+                                                      });
+                                  
+                                                      // Find the last assistant message to carry over the agent context
+                                                      let lastAgentName: string | undefined = undefined;
+                                                      let lastAgentDisplay: string | undefined = undefined;
+                                                      for (let i = newMessages.length - 1; i >= 0; i--) {
+                                                        if (newMessages[i].role === 'assistant') {
+                                                          lastAgentName = newMessages[i].agentName;
+                                                          lastAgentDisplay = newMessages[i].agentDisplay;
+                                                          break;
+                                                        }
+                                                      }
+                                  
+                                                      // Add NEW assistant message for post-tool content, with agent context
+                                                      newMessages.push({
+                                                        role: 'assistant',
+                                                        content: '',
+                                                        agentName: lastAgentName,
+                                                        agentDisplay: lastAgentDisplay
+                                                      });
+                                                      
+                                                      return newMessages;
+                                                    });              } else if (data.type === 'content') {
                 console.log("Received content chunk:", data.content);
                 setMessages(prev => {
                   const newMessages = [...prev];
@@ -118,6 +150,13 @@ export default function Home() {
                   if (lastAssistantIndex >= 0 && newMessages[lastAssistantIndex].role === 'assistant') {
                     console.log("Updating message content, current length:", newMessages[lastAssistantIndex].content.length);
                     newMessages[lastAssistantIndex].content += data.content;
+                    
+                    // Update agent info if provided
+                    if (data.agent_name && data.agent_display) {
+                      newMessages[lastAssistantIndex].agentName = data.agent_name;
+                      newMessages[lastAssistantIndex].agentDisplay = data.agent_display;
+                    }
+                    
                     console.log("New content length:", newMessages[lastAssistantIndex].content.length);
                   }
                   
