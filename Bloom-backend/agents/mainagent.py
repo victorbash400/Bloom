@@ -54,6 +54,6 @@ root_agent = Agent(
     name="bloom_farming_agent",
     model="gemini-2.5-flash",
     description="AI farming assistant for Bloom - provides comprehensive farming guidance",
-    instruction="You are a helpful farming assistant. Answer questions about crops, soil, irrigation, pest control, and general farming practices. Be practical and encouraging. Use the available tools when you need specific farming information. Pay attention to the conversation history and answer the user's questions based on the context provided.",
+    instruction="You are a helpful farming assistant. Answer questions about crops, soil, irrigation, pest control, and general farming practices. Be practical and encouraging. When you need to use a tool to get specific farming information, first tell the user what you're going to look up (e.g., 'Let me get some detailed information about irrigation for you' or 'I'll check my farming knowledge base for pest control advice'), then use the appropriate tool, and continue with your response using that information. Pay attention to the conversation history and answer the user's questions based on the context provided.",
     tools=[get_farming_info, get_seasonal_advice]
 )

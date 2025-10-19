@@ -5,8 +5,10 @@ import ChatSection from '../components/ChatSection';
 import Sidebar from '../components/Sidebar';
 
 interface Message {
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'tool-indicator';
   content: string;
+  toolName?: string;
+  toolStatus?: 'in-progress' | 'done';
 }
 
 const API_BASE_URL = 'http://localhost:8000';
@@ -72,13 +74,45 @@ export default function Home() {
 
               if (data.type === 'session') {
                 setSessionId(data.session_id);
+              } else if (data.type === 'tool_call') {
+                // Tool is being called - stop current message, add tool indicator, and create new message
+                setMessages(prev => {
+                  const newMessages = [...prev];
+                  
+                  // Stop streaming on the current assistant message
+                  const lastAssistantIndex = newMessages.findIndex((msg, index) => 
+                    msg.role === 'assistant' && index === newMessages.length - 1
+                  );
+                  
+                  // Add tool indicator
+                  newMessages.push({
+                    role: 'tool-indicator',
+                    content: '',
+                    toolName: data.tool_name,
+                    toolStatus: 'in-progress'
+                  });
+                  
+                  // Add NEW assistant message for post-tool content
+                  newMessages.push({
+                    role: 'assistant',
+                    content: ''
+                  });
+                  
+                  return newMessages;
+                });
               } else if (data.type === 'content') {
                 console.log("Received content chunk:", data.content);
                 setMessages(prev => {
-                  console.log("Updating message content, current length:", prev[prev.length - 1]?.content?.length || 0);
                   const newMessages = [...prev];
-                  newMessages[newMessages.length - 1].content += data.content;
-                  console.log("New content length:", newMessages[newMessages.length - 1].content.length);
+                  
+                  // Always update the LAST assistant message (most recent one)
+                  const lastAssistantIndex = newMessages.length - 1;
+                  if (lastAssistantIndex >= 0 && newMessages[lastAssistantIndex].role === 'assistant') {
+                    console.log("Updating message content, current length:", newMessages[lastAssistantIndex].content.length);
+                    newMessages[lastAssistantIndex].content += data.content;
+                    console.log("New content length:", newMessages[lastAssistantIndex].content.length);
+                  }
+                  
                   return newMessages;
                 });
               } else if (data.type === 'done') {

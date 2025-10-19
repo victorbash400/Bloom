@@ -20,7 +20,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ role, content }) => {
   }
 
   return (
-    <div className="mb-8">
+    <div className="mb-4">
       <div className="w-full text-gray-900">
         <div className="text-base font-normal text-left prose prose-gray max-w-none" style={{ lineHeight: '1.7' }}>
           <ReactMarkdown>{content}</ReactMarkdown>

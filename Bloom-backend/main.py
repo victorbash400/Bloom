@@ -80,12 +80,26 @@ async def chat_stream(request: ChatRequest):
                 new_message=Content(role='user', parts=[Part(text=request.message)]),
                 run_config=RunConfig(streaming_mode=StreamingMode.SSE),
             ):
+                # Check if this event contains a function call
                 if event.content and event.content.parts:
-                    chunk_data = {
-                        'type': 'content',
-                        'content': event.content.parts[0].text,
-                    }
-                    yield f"data: {json.dumps(chunk_data)}\n\n"
+                    for part in event.content.parts:
+                        # Check if this part is a function call
+                        if hasattr(part, 'function_call') and part.function_call:
+                            tool_name = part.function_call.name
+                            tool_data = {
+                                'type': 'tool_call',
+                                'tool_name': tool_name,
+                            }
+                            yield f"data: {json.dumps(tool_data)}\n\n"
+                            logger.info(f"🔧 Tool call detected: {tool_name}")
+                        elif hasattr(part, 'text') and part.text and event.partial:
+                            # Regular text content
+                            content = part.text
+                            chunk_data = {
+                                'type': 'content',
+                                'content': content,
+                            }
+                            yield f"data: {json.dumps(chunk_data)}\n\n"
             
             yield f"data: {json.dumps({'type': 'done'})}\n\n"
 

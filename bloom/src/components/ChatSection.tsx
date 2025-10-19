@@ -1,10 +1,13 @@
 import React, { useRef, useEffect } from 'react';
 import ChatBubble from './ChatBubble';
 import ChatInput from './ChatInput';
+import ToolIndicator from './ToolIndicator';
 
 interface Message {
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'tool-indicator';
   content: string;
+  toolName?: string;
+  toolStatus?: 'in-progress' | 'done';
 }
 
 interface ChatSectionProps {
@@ -68,11 +71,19 @@ const ChatSection: React.FC<ChatSectionProps> = ({
         <div className="max-w-2xl mx-auto px-8">
           <div className="space-y-8">
             {messages.map((message, index) => (
-              <ChatBubble
-                key={index}
-                role={message.role}
-                content={message.content}
-              />
+              message.role === 'tool-indicator' ? (
+                <ToolIndicator
+                  key={index}
+                  toolName={message.toolName}
+                  toolStatus={message.toolStatus}
+                />
+              ) : (
+                <ChatBubble
+                  key={index}
+                  role={message.role}
+                  content={message.content}
+                />
+              )
             ))}
 
             {isLoading && (
@@ -80,10 +91,11 @@ const ChatSection: React.FC<ChatSectionProps> = ({
                 <div className="flex items-start space-x-3">
                   <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center">
                     <div
-                      className="rounded-full bg-green-600"
+                      className="rounded-full"
                       style={{
                         width: '8px',
                         height: '8px',
+                        backgroundColor: '#00311e',
                         animation: 'scale 1.5s ease-in-out infinite'
                       }}
                     ></div>
