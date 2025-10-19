@@ -8,6 +8,8 @@ interface ToolIndicatorProps {
 const ToolIndicator: React.FC<ToolIndicatorProps> = ({ toolName, toolStatus }) => {
   const getToolIcon = (toolName?: string) => {
     if (!toolName) return '🔧';
+    if (toolName.includes('search_farming_info')) return '🔍';
+    if (toolName.includes('google_search')) return '🔍';
     if (toolName.includes('farming_info')) return '🌱';
     if (toolName.includes('seasonal_advice')) return '🗓️';
     return '🔧';
