@@ -18,6 +18,7 @@ interface Message {
   agentName?: string;
   agentDisplay?: string;
   attachments?: Attachment[];
+  citations?: string[];
 }
 
 const API_BASE_URL = 'http://localhost:8000';
@@ -29,6 +30,8 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [sessionId, setSessionId] = useState<string | null>(null);
+  
+  const [currentCitations, setCurrentCitations] = useState<string[]>([]);
 
 
 
@@ -180,6 +183,19 @@ export default function Home() {
 
                                                           });
 
+              } else if (data.type === 'citations') {
+                console.log('[Citations] Received citations:', data.citations);
+                // Add citations to the last assistant message
+                setMessages(prev => {
+                  const newMessages = [...prev];
+                  for (let i = newMessages.length - 1; i >= 0; i--) {
+                    if (newMessages[i].role === 'assistant') {
+                      newMessages[i].citations = data.citations;
+                      break;
+                    }
+                  }
+                  return newMessages;
+                });
               } else if (data.type === 'done') {
 
                 setIsLoading(false);
@@ -234,7 +250,7 @@ export default function Home() {
     setMessages([]);
     setIsLoading(false);
     setSessionId(null);
-    setStreamingContent('');
+    setCurrentCitations([]);
   };
 
   return (

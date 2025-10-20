@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import Citations from './Citations';
 
 interface Attachment {
   id: string;
@@ -11,16 +12,17 @@ interface ChatBubbleProps {
   role: 'user' | 'assistant';
   content: string;
   attachments?: Attachment[];
+  citations?: string[];
 }
 
-const ChatBubble: React.FC<ChatBubbleProps> = ({ role, content, attachments }) => {
+const ChatBubble: React.FC<ChatBubbleProps> = ({ role, content, attachments, citations }) => {
   if (role === 'user') {
     return (
       <div className="flex justify-end mb-8">
         <div className="max-w-md">
           <div className="text-white rounded-3xl px-5 py-3 shadow-sm" style={{ backgroundColor: '#04331c' }}>
             <p className="text-sm leading-relaxed">{content}</p>
-            
+
             {/* Attachments */}
             {attachments && attachments.length > 0 && (
               <div className="mt-3 space-y-2">
@@ -47,8 +49,28 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ role, content, attachments }) =
   return (
     <div className="mb-4">
       <div className="w-full text-gray-900">
-        <div className="text-base font-normal text-left prose prose-gray max-w-none" style={{ lineHeight: '1.7' }}>
-          <ReactMarkdown>{content}</ReactMarkdown>
+        <div className="text-base font-normal text-left prose prose-gray max-w-none prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800" style={{ lineHeight: '1.7' }}>
+          <ReactMarkdown
+            components={{
+              a: ({ href, children }) => (
+                <a 
+                  href={href} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline hover:text-blue-800 transition-colors"
+                >
+                  {children}
+                </a>
+              ),
+              strong: ({ children }) => (
+                <strong className="font-semibold text-gray-800">{children}</strong>
+              )
+            }}
+          >
+            {content}
+          </ReactMarkdown>
+          
+          <Citations citations={citations || []} />
         </div>
       </div>
     </div>

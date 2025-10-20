@@ -1208,3 +1208,28 @@ Testing Guide
  IoT Integration: Direct sensor data from soil moisture/weather stations
  References
  
+## Se
+arch Integration
+
+All agents now include real-time web search capabilities powered by Perplexity AI:
+
+### Search Tool Features
+- **Real-time Information**: Access to current market prices, weather data, and agricultural research
+- **Citations**: All search results include proper source citations for transparency
+- **Specialized Queries**: Each agent optimizes search queries for their domain expertise
+- **Error Handling**: Graceful fallback when search services are unavailable
+
+### Agent Search Capabilities
+- **Main Agent**: General farming information and current agricultural trends
+- **Market Agent**: Real-time commodity prices, supplier information, market forecasts
+- **Farm Agent**: Pest control methods, disease treatments, farming best practices
+- **Planner Agent**: Crop planning information, planting schedules, agricultural planning
+
+### Frontend Citation Display
+- Citations are rendered as clickable links in the chat interface
+- Sources open in new tabs for user verification
+- Clean, minimal styling maintains focus on the conversation
+- Proper markdown formatting for readability
+
+### Configuration
+The search functionality requires a `PERPLEXITY_API_KEY` in the environment variables. The tool automatically handles API requests, response formatting, and error recovery.

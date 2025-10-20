@@ -101,6 +101,7 @@ async def chat_stream(request: ChatRequest):
 
             current_agent_name = None
             current_agent_display = None
+            citations = []
 
             async for event in runner.run_async(
                 user_id=request.user_id,
@@ -142,7 +143,19 @@ async def chat_stream(request: ChatRequest):
                             }
                             yield f"data: {json.dumps(tool_data)}\n\n"
                             logger.info(f"🔧 Tool call detected: {tool_name}")
-                            
+                        
+                        elif hasattr(part, 'function_response') and part.function_response:
+                            # Check if this is a search_web response and extract citations
+                            if part.function_response.name == 'search_web':
+                                try:
+                                    # Parse the JSON response from search_web function
+                                    search_response = json.loads(part.function_response.response.get('result', '{}'))
+                                    if isinstance(search_response, dict) and 'citations' in search_response:
+                                        citations.extend(search_response['citations'])
+                                        logger.info(f"📚 Citations extracted: {len(search_response['citations'])} sources")
+                                except Exception as e:
+                                    logger.warning(f"Failed to extract citations: {e}")
+                        
                         elif hasattr(part, 'text') and part.text and event.partial:
                             content = part.text
                             chunk_data = {
@@ -152,6 +165,15 @@ async def chat_stream(request: ChatRequest):
                                 'agent_display': current_agent_display
                             }
                             yield f"data: {json.dumps(chunk_data)}\n\n"
+            
+            # Send citations if any were collected
+            if citations:
+                citations_data = {
+                    'type': 'citations',
+                    'citations': citations
+                }
+                yield f"data: {json.dumps(citations_data)}\n\n"
+                logger.info(f"📚 Sending {len(citations)} citations to frontend")
             
             yield f"data: {json.dumps({'type': 'done'})}\n\n"
 

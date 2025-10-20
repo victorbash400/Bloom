@@ -20,6 +20,7 @@ interface Message {
   agentName?: string;
   agentDisplay?: string;
   attachments?: Attachment[];
+  citations?: string[];
 }
 
 interface ChatSectionProps {
@@ -36,7 +37,7 @@ const MessageRenderer = ({ message, index }: { message: Message; index: number }
     case 'agent-working':
       return null; // Skip agent working indicators
     default:
-      return <ChatBubble key={index} role={message.role} content={message.content} attachments={message.attachments} />;
+      return <ChatBubble key={index} role={message.role} content={message.content} attachments={message.attachments} citations={message.citations} />;
   }
 };
 

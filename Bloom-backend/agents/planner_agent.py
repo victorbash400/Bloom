@@ -1,5 +1,22 @@
 from google.adk.agents import Agent
-from .mock_tools import recall_memory
+from google.adk.tools import FunctionTool
+from .search_tool import get_search_tool
+
+def search_web(query: str) -> str:
+    """Search the web for current information with citations"""
+    import json
+    search_tool = get_search_tool()
+    result = search_tool.search(query)
+    
+    # Extract answer and citations
+    answer = result.get("answer", "No answer found.")
+    citations = search_tool.get_citations(result)
+    
+    # Return as a JSON string
+    return json.dumps({
+        "answer": answer,
+        "citations": citations
+    })
 
 planner_agent = Agent(
     name="planner_agent",
@@ -14,6 +31,8 @@ planner_agent = Agent(
 - Resource planning (quantities needed for the season)
 - Profitability forecasting based on expected yields and market prices
 
-When you receive a question, you **must** first write a short message announcing what you are about to do (e.g., 'Let me check my memory for that.'). Then, in the same turn, call the `recall_memory` tool to get information about planting schedules and best practices for the farmer's region.""",
-    tools=[recall_memory]
+When you receive a question, you **must** first write a short message announcing what you are about to do (e.g., "Let me search for current crop planning information."). Then, in the same turn, call the `search_web` function to find current information about planting schedules, crop varieties, weather patterns, and best practices for the farmer's region. Formulate precise search queries based on what the farmer needs.
+
+Provide clean, natural responses based on the search results. Do NOT include citation markers or "Sources:" sections - the system handles citations separately.""",
+    tools=[FunctionTool(search_web)]
 )
