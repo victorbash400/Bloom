@@ -128,7 +128,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({
 
       <div ref={chatContainerRef} className="flex-1 overflow-y-auto pt-16" style={{ backgroundColor: '#D3E1C4' }}>
         <div className="max-w-2xl mx-auto px-8">
-          <div className="space-y-8">
+          <div className="space-y-8 pb-12">
             {groupedMessages.map((item, index) => {
               if ('isGroup' in item) {
                 return (

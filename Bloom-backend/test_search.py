@@ -6,7 +6,7 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from agents.search_tool import get_search_tool
+from tools.search_tool import get_search_tool
 
 def test_search():
     """Test the search functionality"""

@@ -1,6 +1,6 @@
 from google.adk.agents import Agent
 from google.adk.tools import FunctionTool
-from .search_tool import get_search_tool
+from tools.search_tool import get_search_tool
 
 def search_web(query: str) -> str:
     """Search the web for current information with citations"""
