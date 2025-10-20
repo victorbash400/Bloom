@@ -99,42 +99,41 @@ async def chat_stream(request: ChatRequest):
                     context_text = "\n".join(pdf_contexts)
                     message_text = f"Context from uploaded documents:\n{context_text}\n\nUser question: {request.message}"
 
+            current_agent_name = None
+            current_agent_display = None
+
             async for event in runner.run_async(
                 user_id=request.user_id,
                 session_id=session_id,
                 new_message=Content(role='user', parts=[Part(text=message_text)]),
                 run_config=RunConfig(streaming_mode=StreamingMode.SSE),
             ):
-                # Handle different event types from ADK multi-agent system
-                
-                # Check for agent delegation (when sub-agent starts working)
-                if hasattr(event, 'agent_name') and event.agent_name != 'bloom_main_agent':
-                    agent_name = None
-                    agent_display = None
+                # Check for agent delegation and save the current agent
+                if hasattr(event, 'author') and event.author != 'bloom_main_agent':
+                    agent_author_str = event.author.lower()
+                    if 'planner' in agent_author_str:
+                        current_agent_name = 'planner'
+                        current_agent_display = 'Planner Agent'
+                    elif 'farm' in agent_author_str:
+                        current_agent_name = 'farm' 
+                        current_agent_display = 'Farm Agent'
+                    elif 'market' in agent_author_str:
+                        current_agent_name = 'market'
+                        current_agent_display = 'Market Agent'
                     
-                    if 'planner' in event.agent_name.lower():
-                        agent_name = 'planner'
-                        agent_display = 'Planner Agent'
-                    elif 'farm' in event.agent_name.lower():
-                        agent_name = 'farm' 
-                        agent_display = 'Farm Agent'
-                    elif 'market' in event.agent_name.lower():
-                        agent_name = 'market'
-                        agent_display = 'Market Agent'
-                    
-                    if agent_name:
+                    # Send the agent_working event only once when the agent changes
+                    if current_agent_name:
                         agent_data = {
                             'type': 'agent_working',
-                            'agent_name': agent_name,
-                            'agent_display': agent_display
+                            'agent_name': current_agent_name,
+                            'agent_display': current_agent_display
                         }
                         yield f"data: {json.dumps(agent_data)}\n\n"
-                        logger.info(f"🤖 Sub-agent working: {agent_display}")
+                        logger.info(f"🤖 Sub-agent working: {current_agent_display}")
 
-                # Handle content from agents
+                # Handle content and tool calls
                 if event.content and event.content.parts:
                     for part in event.content.parts:
-                        # Check if this part is a function call (tool usage)
                         if hasattr(part, 'function_call') and part.function_call:
                             tool_name = part.function_call.name
                             tool_data = {
@@ -145,28 +144,12 @@ async def chat_stream(request: ChatRequest):
                             logger.info(f"🔧 Tool call detected: {tool_name}")
                             
                         elif hasattr(part, 'text') and part.text and event.partial:
-                            # Regular text content
                             content = part.text
-                            
-                            # Determine which agent is responding
-                            agent_name = None
-                            agent_display = None
-                            if hasattr(event, 'agent_name') and event.agent_name != 'bloom_main_agent':
-                                if 'planner' in event.agent_name.lower():
-                                    agent_name = 'planner'
-                                    agent_display = 'Planner Agent'
-                                elif 'farm' in event.agent_name.lower():
-                                    agent_name = 'farm'
-                                    agent_display = 'Farm Agent' 
-                                elif 'market' in event.agent_name.lower():
-                                    agent_name = 'market'
-                                    agent_display = 'Market Agent'
-                            
                             chunk_data = {
                                 'type': 'content',
                                 'content': content,
-                                'agent_name': agent_name,
-                                'agent_display': agent_display
+                                'agent_name': current_agent_name,
+                                'agent_display': current_agent_display
                             }
                             yield f"data: {json.dumps(chunk_data)}\n\n"
             
