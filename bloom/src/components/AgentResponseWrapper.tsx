@@ -24,25 +24,25 @@ const AgentResponseWrapper: React.FC<AgentResponseWrapperProps> = ({
 
   return (
     <div
-      className="rounded-lg border p-4 mb-4 bg-gray-50"
+      className="rounded-2xl border-2 p-5 mb-4 bg-gray-50/50"
       style={{
         borderColor: colors.border
       }}
     >
       {/* Agent header */}
-      <div className="flex items-center mb-3">
+      <div className="flex items-center mb-4">
         <div
-          className="inline-flex items-center px-3 py-1 rounded-xl bg-gray-100 border"
+          className="inline-flex items-center px-2.5 py-0.5 rounded-md bg-white border shadow-sm"
           style={{ borderColor: colors.border }}
         >
-          <span className="text-sm font-medium text-black">
+          <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
             {agentDisplay}
           </span>
         </div>
       </div>
 
       {/* Agent response content */}
-      <div>
+      <div className="text-gray-700">
         {children}
       </div>
     </div>
