@@ -1,0 +1,76 @@
+transaction_id,date,category,description,cost_kes,quantity,unit,related_plot_id,related_crop
+txn_20220315_fuel_A,2022-03-15,Fuel,Diesel for Tractor (Land Prep),7500,50.0,Litre,plot_A_2022_S1,Maize
+txn_20220316_labor_A,2022-03-16,Labor,Plowing and harrowing (2.5 ha),12500,5.0,Person-Day,plot_A_2022_S1,Maize
+txn_20220327_seed_A,2022-03-27,Seeds,Hybrid Maize Seed (H6213),15000,62.5,kg,plot_A_2022_S1,Maize
+txn_20220327_fert_A,2022-03-27,Fertilizer,DAP Fertilizer for Planting,32500,5.0,50kg Bag,plot_A_2022_S1,Maize
+txn_20220328_labor_A2,2022-03-28,Labor,Planting Labor (2.5 ha),10000,4.0,Person-Day,plot_A_2022_S1,Maize
+txn_20220425_labor_A3,2022-04-25,Labor,First Weeding,8750,3.5,Person-Day,plot_A_2022_S1,Maize
+txn_20220515_pest_A,2022-05-15,Pesticide,Stalk Borer Control,4500,2.5,Litre,plot_A_2022_S1,Maize
+txn_20220520_labor_A4,2022-05-20,Labor,Second Weeding,8750,3.5,Person-Day,plot_A_2022_S1,Maize
+txn_20220610_fert_A2,2022-06-10,Fertilizer,CAN Top Dressing,27500,5.0,50kg Bag,plot_A_2022_S1,Maize
+txn_20220818_labor_A5,2022-08-18,Labor,Harvesting Labor,15000,6.0,Person-Day,plot_A_2022_S1,Maize
+txn_20220820_trans_A,2022-08-20,Transport,Transport to Storage,5000,1.0,Trip,plot_A_2022_S1,Maize
+txn_20220317_fuel_B,2022-03-17,Fuel,Diesel for Tractor (Land Prep),6000,40.0,Litre,plot_B_2022_S1,Beans
+txn_20220318_labor_B,2022-03-18,Labor,Plowing and harrowing (2.0 ha),10000,4.0,Person-Day,plot_B_2022_S1,Beans
+txn_20220328_seed_B,2022-03-28,Seeds,Rosecoco Bean Seed (GLP 2),12000,80.0,kg,plot_B_2022_S1,Beans
+txn_20220328_fert_B,2022-03-28,Fertilizer,DAP Fertilizer for Planting,26000,4.0,50kg Bag,plot_B_2022_S1,Beans
+txn_20220329_labor_B2,2022-03-29,Labor,Planting Labor (2.0 ha),8000,3.2,Person-Day,plot_B_2022_S1,Beans
+txn_20220428_labor_B3,2022-04-28,Labor,Weeding,7000,2.8,Person-Day,plot_B_2022_S1,Beans
+txn_20220712_labor_B4,2022-07-12,Labor,Harvesting Labor,12000,4.8,Person-Day,plot_B_2022_S1,Beans
+txn_20220320_fuel_C,2022-03-20,Fuel,Diesel for Tractor (Land Prep),4500,30.0,Litre,plot_C_2022_S1,Potatoes
+txn_20220321_labor_C,2022-03-21,Labor,Plowing and harrowing (1.5 ha),7500,3.0,Person-Day,plot_C_2022_S1,Potatoes
+txn_20220331_seed_C,2022-03-31,Seeds,Certified Shangi Potato Seed,36000,12.0,50kg Bag,plot_C_2022_S1,Potatoes
+txn_20220331_fert_C,2022-03-31,Fertilizer,DAP Fertilizer for Planting,19500,3.0,50kg Bag,plot_C_2022_S1,Potatoes
+txn_20220401_labor_C2,2022-04-01,Labor,Planting Labor (1.5 ha),6000,2.4,Person-Day,plot_C_2022_S1,Potatoes
+txn_20220505_labor_C3,2022-05-05,Labor,Hilling/Earthing Up,5250,2.1,Person-Day,plot_C_2022_S1,Potatoes
+txn_20220518_pest_C,2022-05-18,Pesticide,Fungicide for Blight,5000,1.5,Litre,plot_C_2022_S1,Potatoes
+txn_20220722_labor_C4,2022-07-22,Labor,Harvesting Labor,10500,4.2,Person-Day,plot_C_2022_S1,Potatoes
+txn_20220315_fuel_D,2022-03-15,Fuel,Diesel for Tractor (Land Prep),3000,20.0,Litre,plot_D_2022_S1,Maize
+txn_20220316_labor_D,2022-03-16,Labor,Plowing and harrowing (1.0 ha),5000,2.0,Person-Day,plot_D_2022_S1,Maize
+txn_20220327_seed_D,2022-03-27,Seeds,Hybrid Maize Seed (H6213),6000,25.0,kg,plot_D_2022_S1,Maize
+txn_20220327_fert_D,2022-03-27,Fertilizer,DAP Fertilizer for Planting,13000,2.0,50kg Bag,plot_D_2022_S1,Maize
+txn_20220328_labor_D2,2022-03-28,Labor,Planting Labor (1.0 ha),4000,1.6,Person-Day,plot_D_2022_S1,Maize
+txn_20220425_labor_D3,2022-04-25,Labor,First Weeding,3500,1.4,Person-Day,plot_D_2022_S1,Maize
+txn_20220515_pest_D,2022-05-15,Pesticide,Stalk Borer Control,1800,1.0,Litre,plot_D_2022_S1,Maize
+txn_20220520_labor_D4,2022-05-20,Labor,Second Weeding,3500,1.4,Person-Day,plot_D_2022_S1,Maize
+txn_20220610_fert_D2,2022-06-10,Fertilizer,CAN Top Dressing,11000,2.0,50kg Bag,plot_D_2022_S1,Maize
+txn_20220818_labor_D5,2022-08-18,Labor,Harvesting Labor,6000,2.4,Person-Day,plot_D_2022_S1,Maize
+txn_20220820_trans_D,2022-08-20,Transport,Transport to Storage,2000,1.0,Trip,plot_D_2022_S1,Maize
+txn_20240315_fuel_A,2024-03-15,Fuel,Diesel for Tractor (Land Prep),7800,50.0,Litre,plot_A_2024_S1,Beans
+txn_20240316_labor_A,2024-03-16,Labor,Plowing and harrowing (2.5 ha),13000,5.0,Person-Day,plot_A_2024_S1,Beans
+txn_20240325_seed_A,2024-03-25,Seeds,Rosecoco Bean Seed (GLP 2),25000,100.0,kg,plot_A_2024_S1,Beans
+txn_20240325_fert_A,2024-03-25,Fertilizer,DAP Fertilizer for Planting (Subsidized),12500,5.0,50kg Bag,plot_A_2024_S1,Beans
+txn_20240326_labor_A2,2024-03-26,Labor,Planting Labor (2.5 ha),10000,4.0,Person-Day,plot_A_2024_S1,Beans
+txn_20240424_labor_A3,2024-04-24,Labor,Weeding,8750,3.5,Person-Day,plot_A_2024_S1,Beans
+txn_20240710_labor_A4,2024-07-10,Labor,Harvesting Labor,15000,6.0,Person-Day,plot_A_2024_S1,Beans
+txn_20240318_fuel_B,2024-03-18,Fuel,Diesel for Tractor (Land Prep),6200,40.0,Litre,plot_B_2024_S1,Potatoes
+txn_20240319_labor_B,2024-03-19,Labor,Plowing and harrowing (2.0 ha),10400,4.0,Person-Day,plot_B_2024_S1,Potatoes
+txn_20240328_seed_B,2024-03-28,Seeds,Certified Shangi Potato Seed,48000,16.0,50kg Bag,plot_B_2024_S1,Potatoes
+txn_20240328_fert_B,2024-03-28,Fertilizer,DAP Fertilizer for Planting (Subsidized),10000,4.0,50kg Bag,plot_B_2024_S1,Potatoes
+txn_20240329_labor_B2,2024-03-29,Labor,Planting Labor (2.0 ha),8000,3.2,Person-Day,plot_B_2024_S1,Potatoes
+txn_20240502_labor_B3,2024-05-02,Labor,Hilling/Earthing Up,7000,2.8,Person-Day,plot_B_2024_S1,Potatoes
+txn_20240515_pest_B,2024-05-15,Pesticide,Fungicide for Blight,6500,2.0,Litre,plot_B_2024_S1,Potatoes
+txn_20240720_labor_B4,2024-07-20,Labor,Harvesting Labor,14000,5.6,Person-Day,plot_B_2024_S1,Potatoes
+txn_20240317_fuel_C,2024-03-17,Fuel,Diesel for Tractor (Land Prep),4650,30.0,Litre,plot_C_2024_S1,Maize
+txn_20240318_labor_C,2024-03-18,Labor,Plowing and harrowing (1.5 ha),7800,3.0,Person-Day,plot_C_2024_S1,Maize
+txn_20240326_seed_C,2024-03-26,Seeds,Hybrid Maize Seed (DK777),9750,37.5,kg,plot_C_2024_S1,Maize
+txn_20240326_fert_C,2024-03-26,Fertilizer,DAP Fertilizer for Planting (Subsidized),7500,3.0,50kg Bag,plot_C_2024_S1,Maize
+txn_20240327_labor_C2,2024-03-27,Labor,Planting Labor (1.5 ha),6000,2.4,Person-Day,plot_C_2024_S1,Maize
+txn_20240426_labor_C3,2024-04-26,Labor,First Weeding,5250,2.1,Person-Day,plot_C_2024_S1,Maize
+txn_20240518_pest_C,2024-05-18,Pesticide,Stalk Borer Control,2700,1.5,Litre,plot_C_2024_S1,Maize
+txn_20240522_labor_C4,2024-05-22,Labor,Second Weeding,5250,2.1,Person-Day,plot_C_2024_S1,Maize
+txn_20240615_fert_C2,2024-06-15,Fertilizer,CAN Top Dressing (Subsidized),7500,3.0,50kg Bag,plot_C_2024_S1,Maize
+txn_20240815_labor_C5,2024-08-15,Labor,Harvesting Labor,9000,3.6,Person-Day,plot_C_2024_S1,Maize
+txn_20240819_trans_C,2024-08-19,Transport,Transport to Storage,3000,1.0,Trip,plot_C_2024_S1,Maize
+txn_20250315_fuel_A,2025-03-15,Fuel,Diesel for Tractor (Land Prep),7800,50.0,Litre,plot_A_2025_S1,Maize
+txn_20250316_labor_A,2025-03-16,Labor,Plowing and harrowing (2.5 ha),13750,5.0,Person-Day,plot_A_2025_S1,Maize
+txn_20250324_seed_A,2025-03-24,Seeds,Hybrid Maize Seed (H6213),16250,62.5,kg,plot_A_2025_S1,Maize
+txn_20250324_fert_A,2025-03-24,Fertilizer,DAP Fertilizer for Planting (Subsidized),12500,5.0,50kg Bag,plot_A_2025_S1,Maize
+txn_20250325_labor_A2,2025-03-25,Labor,Planting Labor (2.5 ha),11250,4.5,Person-Day,plot_A_2025_S1,Maize
+txn_20250422_labor_A3,2025-04-22,Labor,First Weeding,9375,3.75,Person-Day,plot_A_2025_S1,Maize
+txn_20250518_pest_A,2025-05-18,Pesticide,Stalk Borer Control,4750,2.5,Litre,plot_A_2025_S1,Maize
+txn_20250525_labor_A4,2025-05-25,Labor,Second Weeding,9375,3.75,Person-Day,plot_A_2025_S1,Maize
+txn_20250612_fert_A2,2025-06-12,Fertilizer,CAN Top Dressing (Subsidized),12500,5.0,50kg Bag,plot_A_2025_S1,Maize
+txn_20220601_maint,2022-06-01,Maintenance,Tractor Service and Repairs,25000,1.0,Service,Farm,All
+txn_20230601_maint,2023-06-01,Maintenance,Tractor Service and Repairs,28000,1.0,Service,Farm,All
+txn_20240601_maint,2024-06-01,Maintenance,Tractor Service and Repairs,30000,1.0,Service,Farm,All

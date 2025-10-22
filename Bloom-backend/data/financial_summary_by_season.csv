@@ -1,0 +1,9 @@
+plot_id,plot_name,year,season,crop,area_hectares,total_cost_kes,cost_per_hectare
+plot_A_2022_S1,North Field,2022,S1,Maize,2.5,147000,58800.0
+plot_B_2022_S1,East Ridge,2022,S1,Beans,2.0,81000,40500.0
+plot_C_2022_S1,West Valley,2022,S1,Potatoes,1.5,94250,62833.33
+plot_D_2022_S1,South Slope,2022,S1,Maize,1.0,58800,58800.0
+plot_A_2024_S1,North Field,2024,S1,Beans,2.5,92050,36820.0
+plot_B_2024_S1,East Ridge,2024,S1,Potatoes,2.0,110100,55050.0
+plot_C_2024_S1,West Valley,2024,S1,Maize,1.5,68400,45600.0
+plot_A_2025_S1,North Field,2025,S1,Maize,2.5,97550,39020.0

@@ -1,0 +1,8 @@
+plot_id,year,season,crop_type,area_hectares,yield_tonnes_per_ha,total_harvest_kg,selling_price_kes_per_kg,revenue_kes,total_cost_kes,profit_kes,profit_margin_percent
+plot_A_2022_S1,2022,S1,Maize,2.5,1.9,4750.0,52.0,247000.0,147000,100000.0,40.49
+plot_B_2022_S1,2022,S1,Beans,2.0,0.75,1500.0,95.0,142500.0,81000,61500.0,43.16
+plot_C_2022_S1,2022,S1,Potatoes,1.5,9.5,14250.0,30.0,427500.0,94250,333250.0,77.95
+plot_D_2022_S1,2022,S1,Maize,1.0,1.85,1850.0,52.0,96200.0,58800,37400.0,38.88
+plot_A_2024_S1,2024,S1,Beans,2.5,0.8,2000.0,98.0,196000.0,92050,103950.0,53.04
+plot_B_2024_S1,2024,S1,Potatoes,2.0,10.5,21000.0,33.0,693000.0,110100,582900.0,84.11
+plot_C_2024_S1,2024,S1,Maize,1.5,2.1,3150.0,62.0,195300.0,68400,126900.0,64.98

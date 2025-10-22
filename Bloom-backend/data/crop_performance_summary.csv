@@ -1,0 +1,4 @@
+crop_type,avg_yield_per_ha,min_yield_per_ha,max_yield_per_ha,yield_std_dev,total_harvest_kg,total_revenue_kes
+Beans,0.71,0.55,0.85,0.1,10010.0,1028890.0
+Maize,1.83,1.5,2.2,0.26,25625.0,1533650.0
+Potatoes,9.07,7.5,10.5,1.14,128100.0,3984850.0
