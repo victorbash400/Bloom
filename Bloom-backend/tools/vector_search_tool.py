@@ -37,7 +37,6 @@ if missing_vars:
 
 class VectorSearchTool:
     def __init__(self):
-        self.metadata = self._load_metadata()
         self.client = None
         self._setup_gemini_client()
     
@@ -48,15 +47,6 @@ class VectorSearchTool:
             self.client = genai.Client()
         except Exception as e:
             print(f"Warning: Failed to initialize Gemini client: {e}")
-    
-    def _load_metadata(self):
-        """Load farm metadata for interpreting search results"""
-        try:
-            with open('generated_data/farm_metadata.json', 'r') as f:
-                return json.load(f)
-        except Exception as e:
-            print(f"Warning: Could not load farm metadata: {e}")
-            return {}
     
     def _get_access_token(self):
         """Get GCP access token for Vector Search authentication"""
@@ -104,7 +94,7 @@ class VectorSearchTool:
                 },
                 "neighborCount": num_results
             }],
-            "returnFullDatapoint": False
+            "returnFullDatapoint": True
         }
         
         try:
@@ -116,7 +106,7 @@ class VectorSearchTool:
             return None
     
     def _format_results(self, search_results: Dict, query: str) -> List[Dict[str, Any]]:
-        """Format search results with metadata"""
+        """Format search results with metadata from vector search response"""
         if not search_results or 'nearestNeighbors' not in search_results:
             return []
         
@@ -124,12 +114,19 @@ class VectorSearchTool:
         formatted_results = []
         
         for neighbor in neighbors:
-            plot_id = neighbor['datapoint']['datapointId']
+            datapoint = neighbor.get('datapoint', {})
+            plot_id = datapoint.get('datapointId', 'unknown')
             distance = neighbor.get('distance', 0)
             similarity = 1 - distance  # Convert distance to similarity score
             
-            # Get metadata
-            metadata = self.metadata.get(plot_id, {})
+            # Extract metadata from datapoint restricts (returned by Vector Search)
+            restricts = datapoint.get('restricts', [])
+            metadata = {}
+            for restrict in restricts:
+                namespace = restrict.get('namespace', '')
+                allow_list = restrict.get('allowList', [])
+                if allow_list:
+                    metadata[namespace] = allow_list[0]
             
             result = {
                 'plot_id': plot_id,
@@ -137,9 +134,9 @@ class VectorSearchTool:
                 'plot_name': metadata.get('plot_name', 'Unknown'),
                 'crop': metadata.get('crop', 'Unknown'),
                 'stage': metadata.get('stage', 'Unknown'),
-                'yield_tons_per_ha': metadata.get('yield', 0),
-                'revenue_kes': metadata.get('revenue', 0),
-                'area_hectares': metadata.get('area', 0),
+                'yield_tons_per_ha': float(metadata.get('yield', 0)),
+                'revenue_kes': float(metadata.get('revenue', 0)),
+                'area_hectares': float(metadata.get('area', 0)),
                 'full_description': metadata.get('text', '')
             }
             formatted_results.append(result)
@@ -426,10 +423,55 @@ def _analyze_results(results: List[Dict], query: str) -> Dict[str, Any]:
     
     return analysis
 
+def get_farm_coordinates() -> str:
+    """
+    Get farm plot coordinates for mapping and visualization.
+    
+    Returns:
+        JSON string with plot coordinates and metadata
+    """
+    plots = {
+        "plot_A": {
+            "plot_name": "North Field",
+            "area_hectares": 2.5,
+            "coordinates": [[35.9325, -0.3695], [35.9338, -0.3695], [35.9338, -0.3705], [35.9325, -0.3705], [35.9325, -0.3695]]
+        },
+        "plot_B": {
+            "plot_name": "East Ridge",
+            "area_hectares": 2.0,
+            "coordinates": [[35.9339, -0.3706], [35.9350, -0.3706], [35.9350, -0.3715], [35.9339, -0.3715], [35.9339, -0.3706]]
+        },
+        "plot_C": {
+            "plot_name": "West Valley",
+            "area_hectares": 1.5,
+            "coordinates": [[35.9310, -0.3696], [35.9324, -0.3696], [35.9324, -0.3704], [35.9310, -0.3704], [35.9310, -0.3696]]
+        },
+        "plot_D": {
+            "plot_name": "South Slope",
+            "area_hectares": 1.0,
+            "coordinates": [[35.9326, -0.3716], [35.9337, -0.3716], [35.9337, -0.3724], [35.9326, -0.3724], [35.9326, -0.3716]]
+        }
+    }
+    
+    farm_info = {
+        "farm_name": "Njoro Agri-Hub",
+        "farm_center": {
+            "latitude": -0.37,
+            "longitude": 35.932
+        },
+        "county": "Nakuru County",
+        "total_area_hectares": 7.0,
+        "plots": plots
+    }
+    
+    return json.dumps(farm_info, indent=2)
+
+
 # Export the main functions for use by agents
 __all__ = [
     'search_farm_data',
     'get_historical_yields', 
     'get_crop_performance_comparison',
-    'get_plot_analysis'
+    'get_plot_analysis',
+    'get_farm_coordinates'
 ]
