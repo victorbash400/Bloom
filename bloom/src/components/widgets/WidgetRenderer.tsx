@@ -3,6 +3,7 @@ import WeatherTodayWidget from './WeatherTodayWidget';
 import FarmMapWidget from './FarmMapWidget';
 import SatelliteImageryWidget from './SatelliteImageryWidget';
 import NDVITimeSeriesWidget from './NDVITimeSeriesWidget';
+import GrowthTrackerWidget from './GrowthTrackerWidget';
 
 interface Widget {
   type: string;
@@ -26,6 +27,9 @@ const WidgetRenderer: React.FC<WidgetRendererProps> = ({ widget }) => {
 
     case 'ndvi-chart':
       return <NDVITimeSeriesWidget data={widget.data} />;
+
+    case 'growth-tracker':
+      return <GrowthTrackerWidget data={widget.data} />;
 
     default:
       return (

@@ -1,6 +1,7 @@
 """
 Vector Search Tool for Bloom Agents
 Provides semantic search over farm data using the deployed Vector Search endpoint.
+Falls back to JSON file queries when vector search is unavailable.
 """
 
 import json
@@ -8,12 +9,16 @@ import os
 import requests
 import subprocess
 from typing import Dict, List, Any, Optional
+from collections import defaultdict
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
+
+# Path to the JSON data file (fallback)
+JSON_DATA_PATH = os.path.join(os.path.dirname(__file__), '..', 'generated_data', 'merged_farm_data.json')
 
 # Vector Search endpoint configuration from environment variables
 API_ENDPOINT = os.getenv("VECTOR_SEARCH_API_ENDPOINT")
@@ -39,6 +44,18 @@ class VectorSearchTool:
     def __init__(self):
         self.client = None
         self._setup_gemini_client()
+        self._json_data = None
+    
+    def _load_json_data(self) -> List[Dict]:
+        """Load farm data from JSON file (fallback method)"""
+        if self._json_data is None:
+            try:
+                with open(JSON_DATA_PATH, 'r') as f:
+                    self._json_data = json.load(f)
+            except Exception as e:
+                print(f"Error loading JSON data: {e}")
+                self._json_data = []
+        return self._json_data
     
     def _setup_gemini_client(self):
         """Initialize Gemini client for embeddings"""
@@ -423,6 +440,98 @@ def _analyze_results(results: List[Dict], query: str) -> Dict[str, Any]:
     
     return analysis
 
+def get_growth_tracker_data(plot_name: Optional[str] = None, crop_type: Optional[str] = None) -> str:
+    """
+    Get growth tracking data showing yield progression over time.
+    Uses JSON fallback to avoid quota issues.
+    
+    Args:
+        plot_name: Filter by plot name (optional)
+        crop_type: Filter by crop type (optional)
+    
+    Returns:
+        JSON string with growth tracking data
+    """
+    tool = VectorSearchTool()
+    data = tool._load_json_data()
+    
+    # Group data by plot and time
+    growth_data = defaultdict(list)
+    
+    for record in data:
+        # Apply filters
+        if plot_name and record.get('plot_name', '').lower() != plot_name.lower():
+            continue
+        if crop_type and (record.get('current_crop', '').lower() != crop_type.lower() and 
+                         record.get('crop', '').lower() != crop_type.lower()):
+            continue
+        
+        plot_id = record.get('plot_id', '')
+        if not plot_id:
+            continue
+        
+        # Extract temporal info from plot_id (format: plot_X_YYYY_SN)
+        parts = plot_id.split('_')
+        if len(parts) >= 4:
+            plot = record.get('plot_name', 'Unknown')
+            year = parts[2]
+            season = parts[3]
+            
+            growth_data[plot].append({
+                'plot_id': plot_id,
+                'plot_name': plot,
+                'year': year,
+                'season': season,
+                'period': f"{year} {season}",
+                'crop': record.get('current_crop') or record.get('crop'),
+                'yield_tons_per_ha': record.get('yield_tonnes_per_ha') or record.get('yield_tonnes_per_ha_profit'),
+                'revenue_kes': record.get('revenue_kes') or record.get('revenue_kes_profit'),
+                'profit_kes': record.get('profit_kes'),
+                'profit_margin': record.get('profit_margin_percent'),
+                'crop_stage': record.get('crop_stage'),
+                'planting_date': record.get('planting_date'),
+                'expected_harvest': record.get('expected_harvest'),
+                'area_hectares': record.get('area_hectares') or record.get('area_hectares_fin')
+            })
+    
+    # Sort each plot's data by year and season
+    for plot in growth_data:
+        growth_data[plot].sort(key=lambda x: (x['year'], x['season']))
+    
+    # Calculate trends for each plot
+    plot_summaries = {}
+    for plot, records in growth_data.items():
+        if len(records) < 2:
+            continue
+        
+        yields = [r['yield_tons_per_ha'] for r in records if r['yield_tons_per_ha']]
+        revenues = [r['revenue_kes'] for r in records if r['revenue_kes']]
+        
+        if yields:
+            first_yield = yields[0]
+            last_yield = yields[-1]
+            yield_change = ((last_yield - first_yield) / first_yield * 100) if first_yield > 0 else 0
+            
+            plot_summaries[plot] = {
+                'total_seasons': len(records),
+                'crops_grown': list(set(r['crop'] for r in records if r['crop'])),
+                'avg_yield': round(sum(yields) / len(yields), 2),
+                'yield_trend': 'Improving' if yield_change > 5 else 'Declining' if yield_change < -5 else 'Stable',
+                'yield_change_percent': round(yield_change, 1),
+                'avg_revenue': round(sum(revenues) / len(revenues), 2) if revenues else 0,
+                'time_series': records
+            }
+    
+    return json.dumps({
+        "analysis_type": "growth_tracker",
+        "filters": {
+            "plot_name": plot_name,
+            "crop_type": crop_type
+        },
+        "plots_analyzed": len(plot_summaries),
+        "plot_data": plot_summaries
+    }, indent=2)
+
 def get_farm_coordinates() -> str:
     """
     Get farm plot coordinates for mapping and visualization.
@@ -473,5 +582,6 @@ __all__ = [
     'get_historical_yields', 
     'get_crop_performance_comparison',
     'get_plot_analysis',
-    'get_farm_coordinates'
+    'get_farm_coordinates',
+    'get_growth_tracker_data'
 ]

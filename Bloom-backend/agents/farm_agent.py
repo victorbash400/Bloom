@@ -2,7 +2,7 @@ from google.adk.agents import Agent
 from google.adk.tools import FunctionTool
 from tools.search_tool import get_search_tool
 from tools.weather_tool import get_current_weather, get_weather_forecast, get_planting_weather_advice
-from tools.vector_search_tool import search_farm_data, get_historical_yields, get_farm_coordinates, get_plot_analysis
+from tools.vector_search_tool import search_farm_data, get_historical_yields, get_farm_coordinates, get_plot_analysis, get_growth_tracker_data
 from tools.earth_engine_tool import get_satellite_crop_health, get_soil_analysis, get_crop_monitoring_time_series
 from tools.widget_tool import create_widget
 
@@ -65,7 +65,13 @@ You can chain multiple tool calls in the same turn. When you get data that benef
    - Announce: "I'll show you the trend chart."
    - Call `create_widget(widget_type="ndvi-chart", widget_data=<the time series JSON>)` to display the chart
 
-5. For historical data questions:
+5. For growth tracking and yield progression:
+   - Announce: "Let me track the growth and yield progression for your plots."
+   - Call `get_growth_tracker_data(plot_name=<optional>, crop_type=<optional>)` to get historical yield data
+   - Announce: "I'll show you the growth tracker."
+   - Call `create_widget(widget_type="growth-tracker", widget_data=<the growth tracker JSON>)` to display it
+
+6. For historical data questions:
    - Announce what data you're fetching
    - Call `get_historical_yields()` or `search_farm_data()` to get the data
    - Announce that you're creating a visualization
@@ -92,6 +98,7 @@ Provide clean, natural responses based on the search results. Do NOT include cit
         FunctionTool(get_historical_yields),
         FunctionTool(get_farm_coordinates),
         FunctionTool(get_plot_analysis),
+        FunctionTool(get_growth_tracker_data),
         FunctionTool(get_satellite_crop_health),
         FunctionTool(get_soil_analysis),
         FunctionTool(get_crop_monitoring_time_series),
