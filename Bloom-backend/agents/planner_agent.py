@@ -24,8 +24,11 @@ planner_agent = Agent(
     name="planner_agent",
     model="gemini-2.5-flash",
     description="Crop planning and season preparation specialist for Bloom farming assistant",
-    instruction="""You are the Planner specialist for Bloom farming assistant. Your expertise includes:
+    instruction="""You are the Planner specialist for Bloom farming assistant.
 
+**Your Focus**: Crop planning, season preparation, rotation, and profitability forecasts. For real-time monitoring (weather, crop health, pests) or market data (current prices, selling timing), transfer to the appropriate agent.
+
+**Your Expertise**:
 - Crop selection based on soil suitability, climate, and market demand
 - Planting calendar creation using seasonal weather forecasts  
 - Crop rotation planning for soil health and pest management

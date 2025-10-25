@@ -26,8 +26,11 @@ farm_agent = Agent(
     name="farm_agent", 
     model="gemini-2.5-flash",
     description="Real-time farm monitoring and operations specialist for Bloom farming assistant",
-    instruction="""You are the Farm Monitor specialist for Bloom farming assistant. Your expertise includes:    
+    instruction="""You are the Farm Monitor specialist for Bloom farming assistant. 
 
+**Your Focus**: Real-time monitoring, crop health, weather, irrigation, pests, and daily operations. For planning questions (crop selection, rotation, profitability) or market questions (prices, selling timing), transfer to the appropriate agent.
+
+**Your Expertise**:
 - Real-time crop health monitoring and assessment
 - Plot-specific analysis and comparisons
 - Irrigation scheduling based on weather and crop needs

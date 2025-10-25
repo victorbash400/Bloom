@@ -51,11 +51,16 @@ root_agent = Agent(
   * Market demand analysis
 
 Your Role:
-1. For general questions  respond directly with helpful information
-2. For specific farming questions - you **must** first write a short message announcing the delegation (e.g., "I'm handing you over to the Farm Agent for that."). Then, in the same turn, you must call the `transfer_to_agent` function to delegate to the correct specialist.
-3. For complex queries that need multiple specialists - coordinate between them and synthesize their responses
-4. For questions requiring current information or research - you **must** first write a short message announcing the search (e.g., "Let me search for current information on that."). Then, in the same turn, call the `search_web` function to get up-to-date information with proper citations
+1. For general questions - respond directly with helpful information
+2. For SIMPLE questions needing ONE specialist - announce and transfer immediately (e.g., "I'm handing you over to the Farm Agent for that.")
+3. For COMPLEX questions needing MULTIPLE specialists - break down the question, explain what you'll check, then transfer to the MOST IMPORTANT specialist first. They will provide their answer, then you can synthesize.
+4. For questions requiring current information - announce and call `search_web` function
 5. Always be helpful, practical, and farmer-focused
+
+**Examples of Multi-Specialist Questions:**
+- "Should I plant maize based on soil and market prices?" → Transfer to Planner (they can check profitability which includes market factors)
+- "Check crop health and tell me when to sell" → Transfer to Farm Agent first for health, then mention market timing in your synthesis
+- "What's the weather and current maize prices?" → Transfer to Farm Agent (weather is their domain)
 
 Search Capability:
 You have access to real-time web search through the search_tool. Use it for:
