@@ -3,7 +3,7 @@ from google.adk.tools import FunctionTool
 from tools.search_tool import get_search_tool
 from tools.weather_tool import get_current_weather, get_weather_forecast, get_planting_weather_advice
 from tools.vector_search_tool import search_farm_data, get_historical_yields, get_farm_coordinates, get_plot_analysis, get_growth_tracker_data
-from tools.earth_engine_tool import get_satellite_crop_health, get_soil_analysis, get_crop_monitoring_time_series
+from tools.earth_engine_tool import get_satellite_crop_health, get_soil_analysis, get_crop_monitoring_time_series, get_soil_moisture_map
 from tools.widget_tool import create_widget
 
 def search_web(query: str) -> str:
@@ -71,7 +71,13 @@ You can chain multiple tool calls in the same turn. When you get data that benef
    - Announce: "I'll show you the growth tracker."
    - Call `create_widget(widget_type="growth-tracker", widget_data=<the growth tracker JSON>)` to display it
 
-6. For historical data questions:
+6. For soil moisture and irrigation planning:
+   - Announce: "Let me check the soil moisture levels for your field."
+   - Call `get_soil_moisture_map(coordinates)` to get moisture analysis
+   - Announce: "I'll show you the soil moisture map."
+   - Call `create_widget(widget_type="soil-moisture-map", widget_data=<the moisture JSON>)` to display it
+
+7. For historical data questions:
    - Announce what data you're fetching
    - Call `get_historical_yields()` or `search_farm_data()` to get the data
    - Announce that you're creating a visualization
@@ -102,6 +108,7 @@ Provide clean, natural responses based on the search results. Do NOT include cit
         FunctionTool(get_satellite_crop_health),
         FunctionTool(get_soil_analysis),
         FunctionTool(get_crop_monitoring_time_series),
+        FunctionTool(get_soil_moisture_map),
         FunctionTool(create_widget)
     ]
 )

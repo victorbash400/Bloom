@@ -358,6 +358,122 @@ def get_soil_analysis(coordinates: List[List[float]]) -> str:
     except Exception as e:
         return json.dumps({"error": f"Unexpected error: {e}", "coordinates": coordinates})
 
+def get_soil_moisture_map(coordinates: List[List[float]], include_soil_properties: bool = True) -> str:
+    """
+    Get soil moisture analysis and mapping data for agricultural planning.
+    
+    Args:
+        coordinates: List of coordinate pairs [[lon, lat], ...] defining the area
+        include_soil_properties: Include soil pH and texture analysis
+    
+    Returns:
+        JSON string with soil moisture and properties
+    """
+    tool = EarthEngineTool()
+    
+    try:
+        # Create geometry
+        geometry = tool._create_geometry(coordinates)
+        
+        # Get soil properties if requested
+        soil_properties = None
+        if include_soil_properties:
+            soil_properties = tool._get_soil_data(geometry)
+        
+        # Get NDVI as a proxy for vegetation water stress
+        # (Real soil moisture would require SMAP/SMOS datasets with authentication)
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=16)  # Last 16 days
+        
+        start_str = start_date.strftime('%Y-%m-%d')
+        end_str = end_date.strftime('%Y-%m-%d')
+        
+        # Get recent image for vegetation analysis
+        image = tool._get_best_image(geometry, start_str, end_str)
+        
+        moisture_status = "Unknown"
+        moisture_level = 0.5  # Default medium
+        recommendation = "Monitor soil conditions"
+        
+        if image:
+            # Calculate NDVI as indicator of plant water stress
+            ndvi_image = tool._calculate_ndvi(image)
+            ndvi_stats = tool._get_ndvi_stats(ndvi_image, geometry)
+            mean_ndvi = ndvi_stats['mean']
+            
+            # Interpret moisture based on NDVI and soil properties
+            # High NDVI = good moisture, Low NDVI = potential water stress
+            if mean_ndvi > 0.6:
+                moisture_status = "Good"
+                moisture_level = 0.75
+                recommendation = "Soil moisture appears adequate. Continue monitoring."
+            elif mean_ndvi > 0.4:
+                moisture_status = "Moderate"
+                moisture_level = 0.5
+                recommendation = "Consider irrigation if no rain expected in next 3-5 days."
+            elif mean_ndvi > 0.2:
+                moisture_status = "Low"
+                moisture_level = 0.3
+                recommendation = "Irrigation recommended. Check soil moisture levels."
+            else:
+                moisture_status = "Very Low"
+                moisture_level = 0.15
+                recommendation = "Urgent irrigation needed. Crops may be water-stressed."
+            
+            image_date = datetime.fromtimestamp(
+                image.getInfo()['properties'].get('system:time_start', 0) / 1000
+            ).strftime('%Y-%m-%d')
+        else:
+            image_date = "No recent data"
+        
+        # Calculate area
+        area_m2 = geometry.area().getInfo()
+        area_hectares = area_m2 / 10000
+        
+        # Create moisture map data (simplified - one value per area)
+        moisture_map = {
+            "coordinates": coordinates,
+            "moisture_level": moisture_level,
+            "moisture_status": moisture_status,
+            "color": _get_moisture_color(moisture_level),
+            "area_hectares": round(area_hectares, 2)
+        }
+        
+        result = {
+            "analysis_type": "soil_moisture_map",
+            "coordinates": coordinates,
+            "area_hectares": round(area_hectares, 2),
+            "moisture_analysis": {
+                "status": moisture_status,
+                "level": moisture_level,
+                "recommendation": recommendation,
+                "analysis_date": image_date,
+                "method": "NDVI-based estimation"
+            },
+            "soil_properties": soil_properties,
+            "moisture_map": moisture_map,
+            "irrigation_priority": "High" if moisture_level < 0.4 else "Medium" if moisture_level < 0.6 else "Low",
+            "analysis_timestamp": datetime.now().isoformat()
+        }
+        
+        return json.dumps(result, indent=2)
+        
+    except EarthEngineError as e:
+        return json.dumps({"error": str(e), "coordinates": coordinates})
+    except Exception as e:
+        return json.dumps({"error": f"Unexpected error: {e}", "coordinates": coordinates})
+
+def _get_moisture_color(level: float) -> str:
+    """Get color code for moisture level"""
+    if level > 0.7:
+        return "#22c55e"  # Green - good moisture
+    elif level > 0.5:
+        return "#84cc16"  # Light green - moderate
+    elif level > 0.3:
+        return "#eab308"  # Yellow - low
+    else:
+        return "#ef4444"  # Red - very low
+
 def get_crop_monitoring_time_series(coordinates: List[List[float]], months_back: int = 6) -> str:
     """
     Get time series analysis of crop health over multiple months.
@@ -476,5 +592,6 @@ def get_crop_monitoring_time_series(coordinates: List[List[float]], months_back:
 __all__ = [
     'get_satellite_crop_health',
     'get_soil_analysis',
-    'get_crop_monitoring_time_series'
+    'get_crop_monitoring_time_series',
+    'get_soil_moisture_map'
 ]

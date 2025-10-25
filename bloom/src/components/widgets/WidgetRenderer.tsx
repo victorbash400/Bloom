@@ -4,6 +4,7 @@ import FarmMapWidget from './FarmMapWidget';
 import SatelliteImageryWidget from './SatelliteImageryWidget';
 import NDVITimeSeriesWidget from './NDVITimeSeriesWidget';
 import GrowthTrackerWidget from './GrowthTrackerWidget';
+import SoilMoistureMapWidget from './SoilMoistureMapWidget';
 
 interface Widget {
   type: string;
@@ -30,6 +31,9 @@ const WidgetRenderer: React.FC<WidgetRendererProps> = ({ widget }) => {
 
     case 'growth-tracker':
       return <GrowthTrackerWidget data={widget.data} />;
+
+    case 'soil-moisture-map':
+      return <SoilMoistureMapWidget data={widget.data} />;
 
     default:
       return (
