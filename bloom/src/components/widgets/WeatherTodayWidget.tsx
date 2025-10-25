@@ -8,7 +8,7 @@ interface WeatherData {
     longitude: number;
     city: string;
   };
-  current: {
+  current_weather: {
     temperature: number;
     feels_like: number;
     humidity: number;
@@ -18,7 +18,7 @@ interface WeatherData {
     wind_direction: number;
     visibility: number;
   };
-  conditions: {
+  farming_conditions: {
     overall_conditions: string;
     activity_conditions: {
       planting: string;
@@ -30,7 +30,7 @@ interface WeatherData {
     humidity: number;
     wind_speed: number;
   };
-  irrigation: {
+  irrigation_recommendation: {
     irrigation_needed: boolean;
     priority: string;
     reason: string;
@@ -73,7 +73,7 @@ const WeatherTodayWidget: React.FC<WeatherTodayWidgetProps> = ({ data }) => {
   };
 
   // Create chart data for conditions
-  const conditionsData = Object.entries(data.conditions.activity_conditions).map(([activity, condition]) => ({
+  const conditionsData = Object.entries(data.farming_conditions?.activity_conditions || {}).map(([activity, condition]) => ({
     activity: activity.replace('_', ' '),
     score: condition === 'Good' ? 3 : condition === 'Fair' ? 2 : 1,
     condition
@@ -88,8 +88,8 @@ const WeatherTodayWidget: React.FC<WeatherTodayWidgetProps> = ({ data }) => {
           <p className="text-xs text-gray-600">{data.location.city}</p>
         </div>
         <div className="text-right">
-          <div className="text-2xl font-bold text-gray-800">{Math.round(data.current.temperature)}°C</div>
-          <div className="text-xs text-gray-600">Feels like {Math.round(data.current.feels_like)}°C</div>
+          <div className="text-2xl font-bold text-gray-800">{Math.round(data.current_weather.temperature)}°C</div>
+          <div className="text-xs text-gray-600">Feels like {Math.round(data.current_weather.feels_like)}°C</div>
         </div>
       </div>
 
@@ -100,7 +100,7 @@ const WeatherTodayWidget: React.FC<WeatherTodayWidgetProps> = ({ data }) => {
             <Cloud className="w-4 h-4 text-blue-500" />
             <span className="text-sm font-medium text-gray-700">Conditions</span>
           </div>
-          <p className="text-sm text-blue-800 font-medium capitalize">{data.current.description}</p>
+          <p className="text-sm text-blue-800 font-medium capitalize">{data.current_weather.description}</p>
         </div>
       </div>
 
@@ -109,25 +109,25 @@ const WeatherTodayWidget: React.FC<WeatherTodayWidgetProps> = ({ data }) => {
         <div className="bg-gray-50 rounded-lg p-2 text-center">
           <Droplets className="w-4 h-4 text-blue-500 mx-auto mb-1" />
           <div className="text-xs text-gray-600">Humidity</div>
-          <div className="text-sm font-semibold text-gray-800">{data.current.humidity}%</div>
+          <div className="text-sm font-semibold text-gray-800">{data.current_weather.humidity}%</div>
         </div>
-        
+
         <div className="bg-gray-50 rounded-lg p-2 text-center">
           <Wind className="w-4 h-4 text-gray-500 mx-auto mb-1" />
           <div className="text-xs text-gray-600">Wind</div>
-          <div className="text-sm font-semibold text-gray-800">{data.current.wind_speed} m/s</div>
+          <div className="text-sm font-semibold text-gray-800">{data.current_weather.wind_speed} m/s</div>
         </div>
-        
+
         <div className="bg-gray-50 rounded-lg p-2 text-center">
           <Gauge className="w-4 h-4 text-purple-500 mx-auto mb-1" />
           <div className="text-xs text-gray-600">Pressure</div>
-          <div className="text-sm font-semibold text-gray-800">{data.current.pressure} hPa</div>
+          <div className="text-sm font-semibold text-gray-800">{data.current_weather.pressure} hPa</div>
         </div>
-        
+
         <div className="bg-gray-50 rounded-lg p-2 text-center">
           <Eye className="w-4 h-4 text-green-500 mx-auto mb-1" />
           <div className="text-xs text-gray-600">Visibility</div>
-          <div className="text-sm font-semibold text-gray-800">{data.current.visibility} km</div>
+          <div className="text-sm font-semibold text-gray-800">{data.current_weather.visibility} km</div>
         </div>
       </div>
 
@@ -137,29 +137,29 @@ const WeatherTodayWidget: React.FC<WeatherTodayWidgetProps> = ({ data }) => {
           <Thermometer className="w-4 h-4 text-green-500" />
           <span className="text-sm font-medium text-gray-700">Farming Conditions</span>
         </div>
-        
-        <div className={`rounded-lg p-2 mb-3 ${getConditionColor(data.conditions.overall_conditions)}`}>
-          <div className="text-sm font-medium">Overall: {data.conditions.overall_conditions}</div>
+
+        <div className={`rounded-lg p-2 mb-3 ${getConditionColor(data.farming_conditions.overall_conditions)}`}>
+          <div className="text-sm font-medium">Overall: {data.farming_conditions.overall_conditions}</div>
         </div>
 
         <div className="h-32">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={conditionsData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="activity" 
+              <XAxis
+                dataKey="activity"
                 tick={{ fontSize: 10 }}
                 angle={-45}
                 textAnchor="end"
                 height={40}
               />
               <YAxis hide />
-              <Tooltip 
+              <Tooltip
                 formatter={(value, name, props) => [props.payload.condition, 'Condition']}
                 labelFormatter={(label) => `Activity: ${label}`}
               />
-              <Bar 
-                dataKey="score" 
+              <Bar
+                dataKey="score"
                 fill="#3b82f6"
                 radius={[2, 2, 0, 0]}
               />
@@ -174,20 +174,20 @@ const WeatherTodayWidget: React.FC<WeatherTodayWidgetProps> = ({ data }) => {
           <Droplets className="w-4 h-4 text-blue-500" />
           <span className="text-sm font-medium text-gray-700">Irrigation</span>
         </div>
-        
-        <div className={`rounded-lg p-3 ${getPriorityColor(data.irrigation.priority)}`}>
+
+        <div className={`rounded-lg p-3 ${getPriorityColor(data.irrigation_recommendation.priority)}`}>
           <div className="flex items-center justify-between mb-1">
             <span className="text-sm font-medium">
-              {data.irrigation.irrigation_needed ? 'Needed' : 'Not Needed'}
+              {data.irrigation_recommendation.irrigation_needed ? 'Needed' : 'Not Needed'}
             </span>
             <span className="text-xs font-medium">
-              {data.irrigation.priority} Priority
+              {data.irrigation_recommendation.priority} Priority
             </span>
           </div>
-          <p className="text-xs">{data.irrigation.reason}</p>
-          {data.irrigation.next_3_days_rainfall > 0 && (
+          <p className="text-xs">{data.irrigation_recommendation.reason}</p>
+          {data.irrigation_recommendation.next_3_days_rainfall > 0 && (
             <p className="text-xs mt-1 opacity-75">
-              Expected: {data.irrigation.next_3_days_rainfall.toFixed(1)}mm
+              Expected: {data.irrigation_recommendation.next_3_days_rainfall.toFixed(1)}mm
             </p>
           )}
         </div>

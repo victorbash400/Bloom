@@ -102,6 +102,7 @@ async def chat_stream(request: ChatRequest):
             current_agent_name = None
             current_agent_display = None
             citations = []
+            widgets = []
 
             async for event in runner.run_async(
                 user_id=request.user_id,
@@ -155,6 +156,33 @@ async def chat_stream(request: ChatRequest):
                                         logger.info(f"📚 Citations extracted: {len(search_response['citations'])} sources")
                                 except Exception as e:
                                     logger.warning(f"Failed to extract citations: {e}")
+                            
+                            # Check if this is a create_widget response and extract widget data
+                            elif part.function_response.name == 'create_widget':
+                                try:
+                                    # Parse the JSON response from create_widget function
+                                    widget_response = json.loads(part.function_response.response.get('result', '{}'))
+                                    if isinstance(widget_response, dict) and 'widget_type' in widget_response:
+                                        # Parse the widget_data JSON string
+                                        import ast
+                                        widget_data_str = widget_response['widget_data']
+                                        # Try to parse as JSON, handling escaped strings
+                                        try:
+                                            widget_data = json.loads(widget_data_str)
+                                        except json.JSONDecodeError:
+                                            # If that fails, try unescaping first
+                                            widget_data = json.loads(widget_data_str.encode().decode('unicode_escape'))
+                                        
+                                        # Send widget immediately
+                                        widget_event = {
+                                            'type': 'widget',
+                                            'widget_type': widget_response['widget_type'],
+                                            'widget_data': widget_data
+                                        }
+                                        yield f"data: {json.dumps(widget_event)}\n\n"
+                                        logger.info(f"🎨 Widget created: {widget_response['widget_type']}")
+                                except Exception as e:
+                                    logger.warning(f"Failed to extract widget: {e}")
                         
                         elif hasattr(part, 'text') and part.text and event.partial:
                             content = part.text

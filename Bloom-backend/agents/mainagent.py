@@ -1,9 +1,9 @@
 from google.adk.agents import Agent
 from google.adk.tools import FunctionTool
-from .planner_agent import planner_agent
-from .farm_agent import farm_agent
-from .market_agent import market_agent
-from .search_tool import get_search_tool
+from agents.planner_agent import planner_agent
+from agents.farm_agent import farm_agent
+from agents.market_agent import market_agent
+from tools.search_tool import get_search_tool
 
 def search_web(query: str) -> str:
     """Search the web for current information with citations"""
@@ -32,14 +32,14 @@ root_agent = Agent(
 - **Farm Agent**: Handles real-time farm monitoring, crop health assessment, irrigation needs, pest control, and daily tasks  
 - **Market Agent**: Handles commodity prices, selling timing, supplier information, expense tracking, and profit calculations
 
-**Your Role:**
-1. For general questions like "Hello", "How does Bloom work?", or "Tell me about farming" - respond directly with helpful information
+Your Role:
+1. For general questions  respond directly with helpful information
 2. For specific farming questions - you **must** first write a short message announcing the delegation (e.g., "I'm handing you over to the Farm Agent for that."). Then, in the same turn, you must call the `transfer_to_agent` function to delegate to the correct specialist.
 3. For complex queries that need multiple specialists - coordinate between them and synthesize their responses
 4. For questions requiring current information or research - you **must** first write a short message announcing the search (e.g., "Let me search for current information on that."). Then, in the same turn, call the `search_web` function to get up-to-date information with proper citations
 5. Always be helpful, practical, and farmer-focused
 
-**Search Capability:**
+Search Capability:
 You have access to real-time web search through the search_tool. Use it for:
 - Current market prices and trends
 - Latest farming techniques and research

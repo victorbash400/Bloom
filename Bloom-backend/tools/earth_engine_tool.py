@@ -252,6 +252,40 @@ def get_satellite_crop_health(coordinates: List[List[float]], days_back: int = 3
         else:
             image_date_readable = "Unknown"
         
+        # Generate visualization URLs
+        # RGB True Color visualization
+        rgb_vis_params = {
+            'bands': ['B4', 'B3', 'B2'],
+            'min': 0,
+            'max': 3000,
+            'gamma': 1.4
+        }
+        
+        # NDVI visualization (green = healthy, red = stressed)
+        ndvi_vis_params = {
+            'min': 0,
+            'max': 1,
+            'palette': ['red', 'yellow', 'green']
+        }
+        
+        try:
+            # Get thumbnail URLs with higher resolution and tighter bounds
+            # Use the actual geometry instead of bounds() for better zoom
+            rgb_thumb_url = image.visualize(**rgb_vis_params).getThumbURL({
+                'region': geometry,
+                'dimensions': 800,  # Higher resolution
+                'format': 'png'
+            })
+            
+            ndvi_thumb_url = ndvi_image.visualize(**ndvi_vis_params).getThumbURL({
+                'region': geometry,
+                'dimensions': 800,  # Higher resolution
+                'format': 'png'
+            })
+        except Exception as e:
+            rgb_thumb_url = None
+            ndvi_thumb_url = None
+        
         result = {
             "analysis_type": "satellite_crop_health",
             "coordinates": coordinates,
@@ -267,6 +301,10 @@ def get_satellite_crop_health(coordinates: List[List[float]], days_back: int = 3
                 "std_deviation": round(ndvi_stats['std_dev'], 3)
             },
             "crop_health": interpretation,
+            "imagery": {
+                "rgb_image_url": rgb_thumb_url,
+                "ndvi_image_url": ndvi_thumb_url
+            },
             "analysis_timestamp": datetime.now().isoformat()
         }
         
@@ -348,33 +386,55 @@ def get_crop_monitoring_time_series(coordinates: List[List[float]], months_back:
         collection = (ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED')
                      .filterBounds(geometry)
                      .filterDate(start_str, end_str)
-                     .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 30)))
+                     .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 30))
+                     .sort('system:time_start'))
         
-        # Calculate NDVI for each image
-        def add_ndvi(image):
+        # Get collection size
+        collection_size = collection.size().getInfo()
+        
+        if collection_size == 0:
+            return json.dumps({
+                "error": "No suitable satellite images found for the specified area and time period",
+                "coordinates": coordinates,
+                "time_period": f"{start_str} to {end_str}"
+            })
+        
+        # Calculate NDVI for each image and get mean values
+        def calculate_mean_ndvi(image):
             ndvi = tool._calculate_ndvi(image)
-            return image.addBands(ndvi)
+            mean_ndvi = ndvi.reduceRegion(
+                reducer=ee.Reducer.mean(),
+                geometry=geometry,
+                scale=10,
+                maxPixels=1e9
+            ).get('NDVI')
+            
+            return ee.Feature(None, {
+                'date': image.date().millis(),
+                'ndvi': mean_ndvi,
+                'cloud_cover': image.get('CLOUDY_PIXEL_PERCENTAGE')
+            })
         
-        ndvi_collection = collection.map(add_ndvi)
-        
-        # Get time series data
-        time_series = ndvi_collection.select('NDVI').getRegion(geometry, 10).getInfo()
+        # Map over collection and get results
+        features = collection.map(calculate_mean_ndvi)
+        feature_list = features.getInfo()
         
         # Process time series data
         processed_data = []
-        if len(time_series) > 1:  # Skip header row
-            for row in time_series[1:]:
-                if len(row) >= 5 and row[4] is not None:  # Check for valid NDVI value
-                    date_ms = row[3]
-                    ndvi_value = row[4]
-                    
-                    if date_ms and ndvi_value is not None:
-                        date_readable = datetime.fromtimestamp(date_ms / 1000).strftime('%Y-%m-%d')
-                        processed_data.append({
-                            'date': date_readable,
-                            'ndvi': round(ndvi_value, 3),
-                            'health_status': tool._interpret_ndvi(ndvi_value)['health_status']
-                        })
+        for feature in feature_list['features']:
+            props = feature['properties']
+            date_ms = props.get('date')
+            ndvi_value = props.get('ndvi')
+            cloud_cover = props.get('cloud_cover')
+            
+            if date_ms and ndvi_value is not None:
+                date_readable = datetime.fromtimestamp(date_ms / 1000).strftime('%Y-%m-%d')
+                processed_data.append({
+                    'date': date_readable,
+                    'ndvi': round(ndvi_value, 3),
+                    'cloud_cover': round(cloud_cover, 1) if cloud_cover else None,
+                    'health_status': tool._interpret_ndvi(ndvi_value)['health_status']
+                })
         
         # Sort by date
         processed_data.sort(key=lambda x: x['date'])
@@ -383,9 +443,11 @@ def get_crop_monitoring_time_series(coordinates: List[List[float]], months_back:
         if len(processed_data) >= 2:
             recent_ndvi = processed_data[-1]['ndvi']
             older_ndvi = processed_data[0]['ndvi']
-            trend = "Improving" if recent_ndvi > older_ndvi else "Declining" if recent_ndvi < older_ndvi else "Stable"
+            change = recent_ndvi - older_ndvi
+            trend = "Improving" if change > 0.05 else "Declining" if change < -0.05 else "Stable"
         else:
             trend = "Insufficient data"
+            change = 0
         
         result = {
             "analysis_type": "crop_monitoring_time_series",
@@ -395,8 +457,10 @@ def get_crop_monitoring_time_series(coordinates: List[List[float]], months_back:
             "time_series_data": processed_data,
             "trend_analysis": {
                 "overall_trend": trend,
+                "ndvi_change": round(change, 3) if len(processed_data) >= 2 else None,
                 "latest_ndvi": processed_data[-1]['ndvi'] if processed_data else None,
-                "latest_health": processed_data[-1]['health_status'] if processed_data else None
+                "latest_health": processed_data[-1]['health_status'] if processed_data else None,
+                "earliest_ndvi": processed_data[0]['ndvi'] if processed_data else None
             },
             "analysis_timestamp": datetime.now().isoformat()
         }

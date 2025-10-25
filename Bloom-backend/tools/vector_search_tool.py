@@ -187,7 +187,7 @@ def search_farm_data(query: str, max_results: int = 5) -> str:
         "analysis": analysis
     }, indent=2)
 
-def get_historical_yields(crop_type: str = None, plot_name: str = None, min_yield: float = None) -> str:
+def get_historical_yields(crop_type: Optional[str] = None, plot_name: Optional[str] = None, min_yield: Optional[float] = None) -> str:
     """
     Get historical yield data with optional filtering.
     
@@ -264,7 +264,7 @@ def get_historical_yields(crop_type: str = None, plot_name: str = None, min_yiel
         "total_matching_records": len(filtered_results)
     }, indent=2)
 
-def get_crop_performance_comparison(crops: List[str] = None) -> str:
+def get_crop_performance_comparison(crops: Optional[List[str]] = None) -> str:
     """
     Compare performance across different crops.
     
@@ -322,7 +322,7 @@ def get_crop_performance_comparison(crops: List[str] = None) -> str:
         "best_revenue_per_hectare": best_revenue_per_ha
     }, indent=2)
 
-def get_plot_analysis(plot_name: str = None) -> str:
+def get_plot_analysis(plot_name: Optional[str] = None) -> str:
     """
     Get detailed analysis for specific plots.
     

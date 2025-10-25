@@ -21,6 +21,11 @@ interface Message {
   citations?: string[];
 }
 
+interface Widget {
+  type: string;
+  data: any;
+}
+
 const API_BASE_URL = 'http://localhost:8000';
 
 export default function Home() {
@@ -32,6 +37,8 @@ export default function Home() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   
   const [currentCitations, setCurrentCitations] = useState<string[]>([]);
+
+  const [currentWidget, setCurrentWidget] = useState<Widget | null>(null);
 
 
 
@@ -196,6 +203,13 @@ export default function Home() {
                   }
                   return newMessages;
                 });
+              } else if (data.type === 'widget') {
+                console.log('[Widget] Received widget:', data.widget_type, data.widget_data);
+                // Update current widget
+                setCurrentWidget({
+                  type: data.widget_type,
+                  data: data.widget_data
+                });
               } else if (data.type === 'done') {
 
                 setIsLoading(false);
@@ -251,6 +265,7 @@ export default function Home() {
     setIsLoading(false);
     setSessionId(null);
     setCurrentCitations([]);
+    setCurrentWidget(null);
   };
 
   return (
@@ -260,6 +275,7 @@ export default function Home() {
         messages={messages}
         onSendMessage={handleSendMessage}
         isLoading={isLoading}
+        currentWidget={currentWidget}
       />
     </main>
   );

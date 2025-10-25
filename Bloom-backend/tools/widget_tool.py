@@ -8,14 +8,14 @@ from typing import Dict, Any
 
 def create_widget(widget_type: str, widget_data: str) -> str:
     """
-    Create a widget to display data in the sidebar.
+    Create a widget to display data.
     
     Args:
-        widget_type: Type of widget (weather-today, ndvi-chart, price-chart, etc.)
-        widget_data: JSON string containing the widget data
+        widget_type: Widget type like 'weather-today' or 'farm-map'
+        widget_data: JSON string with the data
     
     Returns:
-        Special formatted response that the backend will detect and convert to a widget
+        Confirmation message
     """
     
     # Return a special format that the backend can detect
