@@ -5,6 +5,13 @@ import SatelliteImageryWidget from './SatelliteImageryWidget';
 import NDVITimeSeriesWidget from './NDVITimeSeriesWidget';
 import GrowthTrackerWidget from './GrowthTrackerWidget';
 import SoilMoistureMapWidget from './SoilMoistureMapWidget';
+import CropRecommendationWidget from './CropRecommendationWidget';
+import ProfitabilityForecastWidget from './ProfitabilityForecastWidget';
+import RotationPlanWidget from './RotationPlanWidget';
+import PriceChartWidget from './PriceChartWidget';
+import ExpenseTrackerWidget from './ExpenseTrackerWidget';
+import InventoryStatusWidget from './InventoryStatusWidget';
+import SellTimingWidget from './SellTimingWidget';
 
 interface Widget {
   type: string;
@@ -34,6 +41,27 @@ const WidgetRenderer: React.FC<WidgetRendererProps> = ({ widget }) => {
 
     case 'soil-moisture-map':
       return <SoilMoistureMapWidget data={widget.data} />;
+
+    case 'crop-recommendation':
+      return <CropRecommendationWidget data={widget.data} />;
+
+    case 'profitability-forecast':
+      return <ProfitabilityForecastWidget data={widget.data} />;
+
+    case 'rotation-plan':
+      return <RotationPlanWidget data={widget.data} />;
+
+    case 'price-chart':
+      return <PriceChartWidget data={widget.data} />;
+
+    case 'expense-tracker':
+      return <ExpenseTrackerWidget data={widget.data} />;
+
+    case 'inventory-status':
+      return <InventoryStatusWidget data={widget.data} />;
+
+    case 'sell-timing':
+      return <SellTimingWidget data={widget.data} />;
 
     default:
       return (

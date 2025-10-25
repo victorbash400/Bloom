@@ -1,6 +1,8 @@
 from google.adk.agents import Agent
 from google.adk.tools import FunctionTool
 from tools.search_tool import get_search_tool
+from tools.market_tool import get_price_chart, get_expense_tracker, get_inventory_status, get_sell_timing_recommendation
+from tools.widget_tool import create_widget
 
 def search_web(query: str) -> str:
     """Search the web for current information with citations"""
@@ -27,12 +29,51 @@ market_agent = Agent(
 - Real-time commodity pricing for crops and inputs
 - Selling timing recommendations based on price trends
 - Supplier comparison for seeds, fertilizers, and equipment
-- Profit/loss calculations based on yields and market prices
-- Expense tracking and budget management
+- Expense tracking and financial analysis
+- Inventory management and stock monitoring
 - Market forecast analysis incorporating supply and demand factors
 
-When you receive a question, you **must** first write a short message announcing what you are about to do (e.g., "Let me search for current market data on that."). Then, in the same turn, call the `search_web` function to find current market prices, supplier information, and price trends. Formulate precise search queries based on what the farmer needs.
+When you receive a question, you **must** first write a short message announcing what you are about to do. Then call the appropriate function and create widgets.
 
-Provide clean, natural responses based on the search results. Do NOT include citation markers or "Sources:" sections - the system handles citations separately.""",
-    tools=[FunctionTool(search_web)]
+**Tool Chaining for Widgets:**
+
+1. For price trends:
+   - Call `get_price_chart(crop=<optional>)` to get price history
+   - Call `create_widget(widget_type="price-chart", widget_data=<the price JSON>)` to display it
+   - Provide a brief summary of what the widget shows
+
+2. For expense tracking:
+   - Call `get_expense_tracker()` to get expense breakdown
+   - Call `create_widget(widget_type="expense-tracker", widget_data=<the expense JSON>)` to display it
+   - Provide a brief summary of what the widget shows
+
+3. For inventory status:
+   - Call `get_inventory_status()` to get stock levels
+   - Call `create_widget(widget_type="inventory-status", widget_data=<the inventory JSON>)` to display it
+   - Provide a brief summary of what the widget shows
+
+4. For sell timing:
+   - Call `get_sell_timing_recommendation(crop=<crop_name>)` to get timing analysis
+   - Call `create_widget(widget_type="sell-timing", widget_data=<the timing JSON>)` to display it
+   - Provide a brief summary of what the widget shows
+
+5. For current market prices or suppliers:
+   - Call `search_web(query)` to find current information
+   - Provide clean responses based on search results
+
+**CRITICAL RULES**: 
+- NEVER wrap function calls in print() or any other function
+- Call each tool ONLY ONCE per question
+- After creating a widget, provide a brief response and STOP
+- Do NOT repeat tool calls or create duplicate widgets
+
+Provide clean, natural responses. Do NOT include citation markers - the system handles citations separately.""",
+    tools=[
+        FunctionTool(search_web),
+        FunctionTool(get_price_chart),
+        FunctionTool(get_expense_tracker),
+        FunctionTool(get_inventory_status),
+        FunctionTool(get_sell_timing_recommendation),
+        FunctionTool(create_widget)
+    ]
 )
