@@ -269,17 +269,20 @@ def get_satellite_crop_health(coordinates: List[List[float]], days_back: int = 3
         }
         
         try:
-            # Get thumbnail URLs with higher resolution and tighter bounds
-            # Use the actual geometry instead of bounds() for better zoom
+            # Get thumbnail URLs with better zoom level
+            # Add buffer around geometry to show surrounding context (500m buffer)
+            buffered_geometry = geometry.buffer(500)  # 500 meters buffer
+            bounds = buffered_geometry.bounds()
+            
             rgb_thumb_url = image.visualize(**rgb_vis_params).getThumbURL({
-                'region': geometry,
-                'dimensions': 800,  # Higher resolution
+                'region': bounds,
+                'dimensions': 512,
                 'format': 'png'
             })
             
             ndvi_thumb_url = ndvi_image.visualize(**ndvi_vis_params).getThumbURL({
-                'region': geometry,
-                'dimensions': 800,  # Higher resolution
+                'region': bounds,
+                'dimensions': 512,
                 'format': 'png'
             })
         except Exception as e:

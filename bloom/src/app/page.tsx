@@ -35,10 +35,12 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [sessionId, setSessionId] = useState<string | null>(null);
-  
+
   const [currentCitations, setCurrentCitations] = useState<string[]>([]);
 
   const [currentWidget, setCurrentWidget] = useState<Widget | null>(null);
+
+  const [currentAgent, setCurrentAgent] = useState<string | null>(null);
 
 
 
@@ -146,49 +148,54 @@ export default function Home() {
 
                 }]);
 
-                                                        } else if (data.type === 'content') {
+              } else if (data.type === 'content') {
 
-                                                          setMessages(prev => {
+                // Track current agent
+                if (data.agent_name) {
+                  setCurrentAgent(data.agent_name);
+                }
 
-                                                            const newMessages = [...prev];
+                setMessages(prev => {
 
-                                                            const lastMessage = newMessages[newMessages.length - 1];
+                  const newMessages = [...prev];
 
-                                          
+                  const lastMessage = newMessages[newMessages.length - 1];
 
-                                                            console.log('[Content Handler] Received data:', data);
 
-                                                            console.log('[Content Handler] Last message:', JSON.parse(JSON.stringify(lastMessage)));
 
-                                          
+                  console.log('[Content Handler] Received data:', data);
 
-                                                            const isSameAgent = lastMessage?.role === 'assistant' && lastMessage?.agentName === data.agent_name;
+                  console.log('[Content Handler] Last message:', JSON.parse(JSON.stringify(lastMessage)));
 
-                                          
 
-                                                            if (lastMessage && lastMessage.role === 'assistant' && isSameAgent) {
 
-                                                              lastMessage.content += data.content;
+                  const isSameAgent = lastMessage?.role === 'assistant' && lastMessage?.agentName === data.agent_name;
 
-                                                            } else {
 
-                                                              newMessages.push({
 
-                                                                role: 'assistant',
+                  if (lastMessage && lastMessage.role === 'assistant' && isSameAgent) {
 
-                                                                content: data.content,
+                    lastMessage.content += data.content;
 
-                                                                agentName: data.agent_name,
+                  } else {
 
-                                                                agentDisplay: data.agent_display,
+                    newMessages.push({
 
-                                                              });
+                      role: 'assistant',
 
-                                                            }
+                      content: data.content,
 
-                                                            return newMessages;
+                      agentName: data.agent_name,
 
-                                                          });
+                      agentDisplay: data.agent_display,
+
+                    });
+
+                  }
+
+                  return newMessages;
+
+                });
 
               } else if (data.type === 'citations') {
                 console.log('[Citations] Received citations:', data.citations);
@@ -266,6 +273,7 @@ export default function Home() {
     setSessionId(null);
     setCurrentCitations([]);
     setCurrentWidget(null);
+    setCurrentAgent(null);
   };
 
   return (
@@ -276,6 +284,7 @@ export default function Home() {
         onSendMessage={handleSendMessage}
         isLoading={isLoading}
         currentWidget={currentWidget}
+        currentAgent={currentAgent}
       />
     </main>
   );

@@ -1,10 +1,12 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import Image from 'next/image';
 import ChatBubble from './ChatBubble';
 import ChatInput from './ChatInput';
 import ToolIndicator from './ToolIndicator';
 import WidgetPanel from './WidgetPanel';
 import AgentResponseWrapper from './AgentResponseWrapper';
+import WelcomeSuggestions from './WelcomeSuggestions';
+import { getGreeting } from '../utils/greetings';
 
 interface Attachment {
   id: string;
@@ -33,6 +35,7 @@ interface ChatSectionProps {
   onSendMessage: (message: string, pdfContextIds?: string[], attachments?: Attachment[]) => void;
   isLoading?: boolean;
   currentWidget?: Widget | null;
+  currentAgent?: string | null;
 }
 
 // Helper to render a single message based on its role
@@ -52,8 +55,16 @@ const ChatSection: React.FC<ChatSectionProps> = ({
   onSendMessage,
   isLoading = false,
   currentWidget = null,
+  currentAgent = null,
 }) => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [greeting, setGreeting] = useState({ message: "Hello!", subtitle: "What can I help you with?" });
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    setGreeting(getGreeting());
+  }, []);
 
   useEffect(() => {
     if (chatContainerRef.current) {
@@ -118,10 +129,14 @@ const ChatSection: React.FC<ChatSectionProps> = ({
             <span className="text-xl font-bold text-gray-800">Bloom</span>
           </div>
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-800 mb-2">Bloom</h1>
-            <p className="text-gray-600">Your AI assistant is ready to help</p>
+            <h1 className="text-4xl font-bold text-gray-800 mb-2">{greeting.message}</h1>
+            <p className="text-gray-600">{greeting.subtitle}</p>
           </div>
-          <ChatInput onSendMessage={onSendMessage} disabled={isLoading} />
+          
+          {/* Suggestion cards around the chat input */}
+          <WelcomeSuggestions onSuggestionClick={(text) => onSendMessage(text)} />
+          
+          <ChatInput onSendMessage={onSendMessage} disabled={isLoading} currentAgent={currentAgent} />
         </div>
         {currentWidget && <WidgetPanel widget={currentWidget} />}
       </>
@@ -178,7 +193,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({
 
         {/* Floating ChatInput */}
         <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-2xl mb-4">
-            <ChatInput onSendMessage={onSendMessage} disabled={isLoading} />
+            <ChatInput onSendMessage={onSendMessage} disabled={isLoading} currentAgent={currentAgent} />
         </div>
       </div>
       {currentWidget && <WidgetPanel widget={currentWidget} />}

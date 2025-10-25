@@ -11,6 +11,7 @@ interface Attachment {
 interface ChatInputProps {
   onSendMessage: (message: string, pdfContextIds?: string[], attachments?: Attachment[]) => void;
   disabled?: boolean;
+  currentAgent?: string | null;
 }
 
 interface Agent {
@@ -31,7 +32,21 @@ interface UploadedFile {
 const ChatInput: React.FC<ChatInputProps> = ({
   onSendMessage,
   disabled = false,
+  currentAgent = null,
 }) => {
+  
+  const getAgentDisplay = (agentName: string | null) => {
+    if (!agentName) return 'Bloom Chat';
+    
+    const agentMap: Record<string, string> = {
+      'farm_agent': '🌱 Farm Agent',
+      'planner_agent': '📋 Planner Agent',
+      'market_agent': '💰 Market Agent',
+      'bloom_main_agent': 'Bloom Chat'
+    };
+    
+    return agentMap[agentName] || 'Bloom Chat';
+  };
   const [input, setInput] = useState('');
   const [showAgentsModal, setShowAgentsModal] = useState(false);
   const [agents, setAgents] = useState<Agent[]>([
@@ -228,12 +243,9 @@ const ChatInput: React.FC<ChatInputProps> = ({
       <form onSubmit={handleSubmit} className="relative rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] pt-[20px] px-[2px] pb-[2px]" style={{ backgroundColor: '#00311e' }}>
         <div className="absolute top-2 left-0 right-0 flex items-center justify-center">
           <div className="flex items-center gap-2 text-xs text-white font-medium">
-            <span>Bloom Chat</span>
-            {activeAgentsCount > 0 && (
-              <div className="flex items-center gap-1">
-                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span className="text-xs">{activeAgentNames.join(', ')}</span>
-              </div>
+            <span>{getAgentDisplay(currentAgent)}</span>
+            {currentAgent && currentAgent !== 'bloom_main_agent' && (
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
             )}
           </div>
         </div>
