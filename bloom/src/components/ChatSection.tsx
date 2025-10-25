@@ -131,56 +131,55 @@ const ChatSection: React.FC<ChatSectionProps> = ({
   // Chat state
   return (
     <>
-      <div className="h-screen flex flex-col relative" style={{ backgroundColor: '#01391A' }}>
+      <div className="h-screen relative" style={{ backgroundColor: '#D3E1C4' }}>
         <div className="absolute top-6 left-6 flex items-end gap-3 z-10">
           <Image src="/bloom_logo.svg" alt="Bloom Logo" width={28} height={28} />
           <span className="text-lg font-bold text-gray-800">Bloom</span>
         </div>
 
-        <div ref={chatContainerRef} className="flex-1 overflow-y-auto pt-16" style={{ backgroundColor: '#D3E1C4' }}>
-        <div className="max-w-2xl mx-auto px-8">
-          <div className="space-y-8 pb-12">
-            {groupedMessages.map((item, index) => {
-              if ('isGroup' in item) {
-                return (
-                  <AgentResponseWrapper
-                    key={index}
-                    agentName={item.agentName}
-                    agentDisplay={item.agentDisplay}
-                  >
-                    <div className="space-y-4">
-                      {item.messages.map((message, msgIndex) => (
-                        <MessageRenderer key={msgIndex} message={message} index={msgIndex} />
-                      ))}
-                    </div>
-                  </AgentResponseWrapper>
-                );
-              } else {
-                return <MessageRenderer key={index} message={item as Message} index={index} />;
-              }
-            })}
+        <div ref={chatContainerRef} className="h-full overflow-y-auto pt-16 fade-out-bottom">
+          <div className="max-w-2xl mx-auto px-8 pb-40">
+            <div className="space-y-8">
+              {groupedMessages.map((item, index) => {
+                if ('isGroup' in item) {
+                  return (
+                    <AgentResponseWrapper
+                      key={index}
+                      agentName={item.agentName}
+                      agentDisplay={item.agentDisplay}
+                    >
+                      <div className="space-y-4">
+                        {item.messages.map((message, msgIndex) => (
+                          <MessageRenderer key={msgIndex} message={message} index={msgIndex} />
+                        ))}
+                      </div>
+                    </AgentResponseWrapper>
+                  );
+                } else {
+                  return <MessageRenderer key={index} message={item as Message} index={index} />;
+                }
+              })}
 
-            {isLoading && (
-              <div className="mb-8">
-                <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center">
-                    <div
-                      className="rounded-full"
-                      style={{ width: '8px', height: '8px', backgroundColor: '#00311e', animation: 'scale 1.5s ease-in-out infinite' }}
-                    ></div>
+              {isLoading && (
+                <div className="mb-8">
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center">
+                      <div
+                        className="rounded-full"
+                        style={{ width: '8px', height: '8px', backgroundColor: '#00311e', animation: 'scale 1.5s ease-in-out infinite' }}
+                      ></div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="pb-4" style={{ backgroundColor: '#D3E1C4' }}>
-        <div className="max-w-2xl mx-auto">
-          <ChatInput onSendMessage={onSendMessage} disabled={isLoading} />
+        {/* Floating ChatInput */}
+        <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-2xl mb-4">
+            <ChatInput onSendMessage={onSendMessage} disabled={isLoading} />
         </div>
-      </div>
       </div>
       {currentWidget && <WidgetPanel widget={currentWidget} />}
     </>

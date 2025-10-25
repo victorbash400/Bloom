@@ -55,3 +55,8 @@ body {
 *::-webkit-scrollbar-thumb:active {
   background-color: rgba(0, 0, 0, 0.4);
 }
+
+.fade-out-bottom {
+  -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+}
