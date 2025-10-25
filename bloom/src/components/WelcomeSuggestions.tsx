@@ -25,7 +25,7 @@ const suggestions: Suggestion[] = [
     position: "top-center"
   },
   {
-    text: "Analyze my crop health with satellite imagery",
+    text: "Check crop health with satellite imagery",
     agent: "Farm Monitor",
     agentEmoji: "🌱",
     position: "top-right"
@@ -37,19 +37,19 @@ const suggestions: Suggestion[] = [
     position: "middle-left"
   },
   {
-    text: "Show me current market prices",
+    text: "Show maize and bean market prices",
     agent: "Market Analyst",
     agentEmoji: "📊",
     position: "middle-right"
   },
   {
-    text: "Calculate profitability for maize vs beans",
+    text: "Compare profitability: maize vs beans",
     agent: "Planner",
     agentEmoji: "📋",
     position: "bottom-left"
   },
   {
-    text: "When is the best time to sell my harvest?",
+    text: "When should I sell my potato harvest?",
     agent: "Market Analyst",
     agentEmoji: "📊",
     position: "bottom-right"

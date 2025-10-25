@@ -164,14 +164,36 @@ async def chat_stream(request: ChatRequest):
                                     widget_response = json.loads(part.function_response.response.get('result', '{}'))
                                     if isinstance(widget_response, dict) and 'widget_type' in widget_response:
                                         # Parse the widget_data JSON string
-                                        import ast
                                         widget_data_str = widget_response['widget_data']
-                                        # Try to parse as JSON, handling escaped strings
+                                        
+                                        # Fix malformed JSON
+                                        widget_data_str = widget_data_str.strip()
+                                        
+                                        # Count braces to fix incomplete JSON
+                                        open_braces = widget_data_str.count('{')
+                                        close_braces = widget_data_str.count('}')
+                                        
+                                        # Add missing opening brace if needed
+                                        if not widget_data_str.startswith('{'):
+                                            widget_data_str = '{' + widget_data_str
+                                            open_braces += 1
+                                        
+                                        # Add missing closing braces if needed
+                                        if open_braces > close_braces:
+                                            widget_data_str = widget_data_str + ('}' * (open_braces - close_braces))
+                                        
+                                        # Try to parse as JSON
                                         try:
                                             widget_data = json.loads(widget_data_str)
-                                        except json.JSONDecodeError:
+                                        except json.JSONDecodeError as e:
+                                            logger.warning(f"JSON parse error: {e}, attempting to fix...")
                                             # If that fails, try unescaping first
-                                            widget_data = json.loads(widget_data_str.encode().decode('unicode_escape'))
+                                            try:
+                                                widget_data = json.loads(widget_data_str.encode().decode('unicode_escape'))
+                                            except:
+                                                # Last resort: log the problematic JSON and skip
+                                                logger.error(f"Could not parse widget_data: {widget_data_str[:200]}...")
+                                                raise
                                         
                                         # Send widget immediately
                                         widget_event = {

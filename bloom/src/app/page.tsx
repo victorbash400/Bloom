@@ -24,6 +24,8 @@ interface Message {
 interface Widget {
   type: string;
   data: any;
+  id: string;
+  timestamp: number;
 }
 
 const API_BASE_URL = 'http://localhost:8000';
@@ -38,7 +40,9 @@ export default function Home() {
 
   const [currentCitations, setCurrentCitations] = useState<string[]>([]);
 
-  const [currentWidget, setCurrentWidget] = useState<Widget | null>(null);
+  const [widgets, setWidgets] = useState<Widget[]>([]);
+
+  const [selectedWidgetIndex, setSelectedWidgetIndex] = useState<number>(0);
 
   const [currentAgent, setCurrentAgent] = useState<string | null>(null);
 
@@ -212,10 +216,17 @@ export default function Home() {
                 });
               } else if (data.type === 'widget') {
                 console.log('[Widget] Received widget:', data.widget_type, data.widget_data);
-                // Update current widget
-                setCurrentWidget({
-                  type: data.widget_type,
-                  data: data.widget_data
+                // Add widget to history
+                setWidgets(prev => {
+                  const newWidget: Widget = {
+                    type: data.widget_type,
+                    data: data.widget_data,
+                    id: `widget-${Date.now()}-${Math.random()}`,
+                    timestamp: Date.now()
+                  };
+                  const updated = [...prev, newWidget];
+                  setSelectedWidgetIndex(updated.length - 1);
+                  return updated;
                 });
               } else if (data.type === 'done') {
 
@@ -272,7 +283,8 @@ export default function Home() {
     setIsLoading(false);
     setSessionId(null);
     setCurrentCitations([]);
-    setCurrentWidget(null);
+    setWidgets([]);
+    setSelectedWidgetIndex(0);
     setCurrentAgent(null);
   };
 
@@ -283,7 +295,9 @@ export default function Home() {
         messages={messages}
         onSendMessage={handleSendMessage}
         isLoading={isLoading}
-        currentWidget={currentWidget}
+        widgets={widgets}
+        selectedWidgetIndex={selectedWidgetIndex}
+        onSelectWidget={setSelectedWidgetIndex}
         currentAgent={currentAgent}
       />
     </main>

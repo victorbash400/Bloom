@@ -28,13 +28,17 @@ interface Message {
 interface Widget {
   type: string;
   data: any;
+  id: string;
+  timestamp: number;
 }
 
 interface ChatSectionProps {
   messages: Message[];
   onSendMessage: (message: string, pdfContextIds?: string[], attachments?: Attachment[]) => void;
   isLoading?: boolean;
-  currentWidget?: Widget | null;
+  widgets?: Widget[];
+  selectedWidgetIndex?: number;
+  onSelectWidget?: (index: number) => void;
   currentAgent?: string | null;
 }
 
@@ -54,7 +58,9 @@ const ChatSection: React.FC<ChatSectionProps> = ({
   messages,
   onSendMessage,
   isLoading = false,
-  currentWidget = null,
+  widgets = [],
+  selectedWidgetIndex = 0,
+  onSelectWidget,
   currentAgent = null,
 }) => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -132,13 +138,19 @@ const ChatSection: React.FC<ChatSectionProps> = ({
             <h1 className="text-4xl font-bold text-gray-800 mb-2">{greeting.message}</h1>
             <p className="text-gray-600">{greeting.subtitle}</p>
           </div>
-          
+
           {/* Suggestion cards around the chat input */}
           <WelcomeSuggestions onSuggestionClick={(text) => onSendMessage(text)} />
-          
+
           <ChatInput onSendMessage={onSendMessage} disabled={isLoading} currentAgent={currentAgent} />
         </div>
-        {currentWidget && <WidgetPanel widget={currentWidget} />}
+        {widgets.length > 0 && (
+          <WidgetPanel
+            widgets={widgets}
+            selectedIndex={selectedWidgetIndex}
+            onSelectWidget={onSelectWidget}
+          />
+        )}
       </>
     );
   }
@@ -193,10 +205,16 @@ const ChatSection: React.FC<ChatSectionProps> = ({
 
         {/* Floating ChatInput */}
         <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-2xl mb-4">
-            <ChatInput onSendMessage={onSendMessage} disabled={isLoading} currentAgent={currentAgent} />
+          <ChatInput onSendMessage={onSendMessage} disabled={isLoading} currentAgent={currentAgent} />
         </div>
       </div>
-      {currentWidget && <WidgetPanel widget={currentWidget} />}
+      {widgets.length > 0 && (
+        <WidgetPanel
+          widgets={widgets}
+          selectedIndex={selectedWidgetIndex}
+          onSelectWidget={onSelectWidget}
+        />
+      )}
     </>
   );
 };
