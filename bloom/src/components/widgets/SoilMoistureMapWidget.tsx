@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Droplets, AlertTriangle, CheckCircle, Info } from 'lucide-react';
+import { Droplets } from 'lucide-react';
 
 interface SoilProperties {
   ph: number;
@@ -40,148 +40,64 @@ interface SoilMoistureMapWidgetProps {
 }
 
 const SoilMoistureMapWidget: React.FC<SoilMoistureMapWidgetProps> = ({ data }) => {
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'good':
-        return 'text-green-700 bg-green-50 border-green-300';
-      case 'moderate':
-        return 'text-blue-700 bg-blue-50 border-blue-300';
-      case 'low':
-        return 'text-orange-700 bg-orange-50 border-orange-300';
-      case 'very low':
-        return 'text-red-700 bg-red-50 border-red-300';
-      default:
-        return 'text-gray-700 bg-gray-50 border-gray-300';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'good':
-        return <CheckCircle className="w-5 h-5 text-green-600" />;
-      case 'moderate':
-        return <Info className="w-5 h-5 text-blue-600" />;
-      case 'low':
-      case 'very low':
-        return <AlertTriangle className="w-5 h-5 text-orange-600" />;
-      default:
-        return <Droplets className="w-5 h-5 text-gray-600" />;
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority.toLowerCase()) {
-      case 'high':
-        return 'bg-red-100 text-red-700 border-red-300';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-700 border-yellow-300';
-      case 'low':
-        return 'bg-green-100 text-green-700 border-green-300';
-      default:
-        return 'bg-gray-100 text-gray-700 border-gray-300';
-    }
-  };
-
   const moisturePercentage = Math.round(data.moisture_analysis.level * 100);
+  const isLow = data.irrigation_priority === 'High';
 
   return (
     <div className="rounded-2xl border-2 border-black p-4 bg-white">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Droplets className="w-5 h-5 text-blue-600" />
-          <h3 className="text-base font-semibold text-gray-800">Soil Moisture Map</h3>
-        </div>
-        <div className="text-xs text-gray-600">
-          {data.area_hectares} ha
+      <div className="flex items-center gap-2 mb-4">
+        <Droplets className="w-5 h-5 text-blue-600" />
+        <div>
+          <h3 className="text-base font-semibold text-gray-800">Soil Moisture</h3>
+          <p className="text-xs text-gray-500">{data.area_hectares} hectares</p>
         </div>
       </div>
 
-      {/* Moisture Status */}
-      <div className={`rounded-lg p-3 mb-3 border flex items-center justify-between ${getStatusColor(data.moisture_analysis.status)}`}>
-        <div className="flex items-center gap-2">
-          {getStatusIcon(data.moisture_analysis.status)}
-          <div>
-            <div className="text-xs font-medium mb-1">Moisture Status</div>
-            <div className="text-sm font-semibold">{data.moisture_analysis.status}</div>
+      {/* Main Status Display */}
+      <div className={`${isLow ? 'bg-orange-50' : 'bg-blue-50'} rounded-xl p-4 mb-4`}>
+        <div className="flex items-center justify-between mb-2">
+          <div className={`text-xs ${isLow ? 'text-orange-700' : 'text-blue-700'}`}>
+            {data.moisture_analysis.status}
+          </div>
+          <div className={`text-3xl font-bold ${isLow ? 'text-orange-900' : 'text-blue-900'}`}>
+            {moisturePercentage}%
           </div>
         </div>
-        <div className="text-right">
-          <div className="text-2xl font-bold">{moisturePercentage}%</div>
-        </div>
-      </div>
 
-      {/* Visual Moisture Indicator */}
-      <div className="mb-3">
-        <div className="text-xs font-medium text-gray-700 mb-2">Moisture Level</div>
-        <div className="relative h-8 bg-gray-200 rounded-lg overflow-hidden">
-          <div 
-            className="absolute top-0 left-0 h-full transition-all duration-500"
-            style={{ 
+        {/* Visual Bar */}
+        <div className="relative h-3 bg-white bg-opacity-50 rounded-full overflow-hidden mb-3">
+          <div
+            className="absolute top-0 left-0 h-full transition-all duration-500 rounded-full"
+            style={{
               width: `${moisturePercentage}%`,
               backgroundColor: data.moisture_map.color
             }}
           />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-xs font-semibold text-gray-800 mix-blend-difference">
-              {moisturePercentage}%
-            </span>
-          </div>
         </div>
-        <div className="flex justify-between mt-1">
-          <span className="text-xs text-gray-500">Dry</span>
-          <span className="text-xs text-gray-500">Optimal</span>
-          <span className="text-xs text-gray-500">Wet</span>
-        </div>
+
+        <p className={`text-sm ${isLow ? 'text-orange-800' : 'text-blue-800'}`}>
+          {data.moisture_analysis.recommendation}
+        </p>
       </div>
 
-      {/* Irrigation Priority */}
-      <div className={`rounded-lg p-2 mb-3 border ${getPriorityColor(data.irrigation_priority)}`}>
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-medium">Irrigation Priority</span>
-          <span className="text-sm font-bold">{data.irrigation_priority}</span>
-        </div>
-      </div>
-
-      {/* Recommendation */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
-        <div className="text-xs font-medium text-blue-900 mb-1">Recommendation</div>
-        <div className="text-sm text-blue-800">{data.moisture_analysis.recommendation}</div>
-      </div>
-
-      {/* Soil Properties */}
+      {/* Soil Properties - Simplified */}
       {data.soil_properties && (
-        <div className="space-y-2 mb-3">
-          <div className="text-xs font-medium text-gray-700">Soil Properties</div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="bg-gray-50 rounded-lg p-2">
-              <div className="text-xs text-gray-600 mb-1">pH Level</div>
-              <div className="text-sm font-bold text-gray-800">
-                {data.soil_properties.ph}
-              </div>
-              <div className="text-xs text-gray-600 mt-1">
-                {data.soil_properties.ph_interpretation}
-              </div>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-2">
-              <div className="text-xs text-gray-600 mb-1">Texture</div>
-              <div className="text-sm font-bold text-gray-800">
-                {data.soil_properties.texture_name}
-              </div>
-              <div className="text-xs text-gray-600 mt-1">
-                {data.soil_properties.texture_suitability}
-              </div>
-            </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="bg-gray-50 rounded-lg p-2">
+            <div className="text-xs text-gray-500">pH</div>
+            <div className="text-lg font-bold text-gray-800">{data.soil_properties.ph}</div>
+          </div>
+          <div className="bg-gray-50 rounded-lg p-2">
+            <div className="text-xs text-gray-500">Texture</div>
+            <div className="text-sm font-semibold text-gray-800">{data.soil_properties.texture_name}</div>
           </div>
         </div>
       )}
 
-      {/* Analysis Info */}
-      <div className="pt-3 border-t border-gray-200">
-        <div className="flex items-center justify-between text-xs text-gray-500">
-          <span>Analysis: {data.moisture_analysis.method}</span>
-          <span>{data.moisture_analysis.analysis_date}</span>
-        </div>
+      {/* Footer */}
+      <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400 text-center">
+        {data.moisture_analysis.analysis_date} • NDVI-based
       </div>
     </div>
   );

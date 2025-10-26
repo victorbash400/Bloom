@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { TrendingUp, Sprout, DollarSign } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { Sprout } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface SeasonRecord {
   plot_id: string;
@@ -93,122 +93,89 @@ const GrowthTrackerWidget: React.FC<GrowthTrackerWidgetProps> = ({ data }) => {
   return (
     <div className="rounded-2xl border-2 border-black p-4 bg-white">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Sprout className="w-5 h-5 text-green-600" />
-          <h3 className="text-base font-semibold text-gray-800">Growth Tracker</h3>
-        </div>
-        <div className="text-xs text-gray-600">
-          {plotName}
-        </div>
-      </div>
-
-      {/* Trend Status */}
-      <div className={`rounded-lg p-3 mb-3 border flex items-center justify-between ${getTrendColor(plotData.yield_trend)}`}>
+      <div className="flex items-center gap-2 mb-4">
+        <Sprout className="w-5 h-5 text-green-600" />
         <div>
-          <div className="text-xs font-medium mb-1">Yield Trend</div>
-          <div className="text-sm font-semibold">
-            {plotData.yield_trend} ({plotData.yield_change_percent > 0 ? '+' : ''}{plotData.yield_change_percent}%)
-          </div>
+          <h3 className="text-base font-semibold text-gray-800">{plotName}</h3>
+          <p className="text-xs text-gray-500">{plotData.crops_grown.join(', ')}</p>
         </div>
-        <div className="text-2xl">{getTrendIcon(plotData.yield_trend)}</div>
       </div>
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-3 gap-2 mb-3">
-        <div className="bg-gray-50 rounded-lg p-2">
-          <div className="text-xs text-gray-600 mb-1">Seasons</div>
-          <div className="text-lg font-bold text-gray-800">
-            {plotData.total_seasons}
+      {/* Trend Highlight */}
+      <div className="bg-green-50 rounded-xl p-3 mb-4 flex items-center justify-between">
+        <div>
+          <div className="text-xs text-green-700 mb-1">Yield Trend</div>
+          <div className="text-xl font-bold text-green-900">
+            {plotData.yield_trend} {getTrendIcon(plotData.yield_trend)}
+          </div>
+          <div className="text-sm text-green-700">
+            {plotData.yield_change_percent > 0 ? '+' : ''}{plotData.yield_change_percent}% change
           </div>
         </div>
-        <div className="bg-gray-50 rounded-lg p-2">
-          <div className="text-xs text-gray-600 mb-1">Avg Yield</div>
-          <div className="text-lg font-bold text-gray-800">
-            {plotData.avg_yield} t/ha
-          </div>
-        </div>
-        <div className="bg-gray-50 rounded-lg p-2">
-          <div className="text-xs text-gray-600 mb-1">Crops</div>
-          <div className="text-xs font-semibold text-gray-800 mt-1">
-            {plotData.crops_grown.join(', ')}
-          </div>
+        <div className="text-right">
+          <div className="text-xs text-green-700">Avg Yield</div>
+          <div className="text-2xl font-bold text-green-900">{plotData.avg_yield}</div>
+          <div className="text-xs text-green-700">t/ha</div>
         </div>
       </div>
 
       {/* Yield Chart */}
-      <div className="mb-3">
-        <div className="text-xs font-medium text-gray-700 mb-2">Yield Over Time</div>
-        <ResponsiveContainer width="100%" height={180}>
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-            <XAxis 
-              dataKey="period" 
-              tick={{ fontSize: 10 }}
-              stroke="#6b7280"
-              angle={-45}
-              textAnchor="end"
-              height={60}
-            />
-            <YAxis 
-              tick={{ fontSize: 10 }}
-              stroke="#6b7280"
-              label={{ value: 'Tons/Ha', angle: -90, position: 'insideLeft', style: { fontSize: 10 } }}
-            />
-            <Tooltip 
-              contentStyle={{ 
-                backgroundColor: 'white', 
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '12px'
-              }}
-              formatter={(value: any, name: string) => {
-                if (name === 'yield') return [value.toFixed(2) + ' t/ha', 'Yield'];
-                if (name === 'revenue') return ['KES ' + (value * 1000).toLocaleString(), 'Revenue'];
-                return [value, name];
-              }}
-            />
-            <Line 
-              type="monotone" 
-              dataKey="yield" 
-              stroke="#22c55e" 
-              strokeWidth={2}
-              dot={{ fill: '#22c55e', r: 4 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+      <ResponsiveContainer width="100%" height={140}>
+        <LineChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+          <XAxis
+            dataKey="period"
+            tick={{ fontSize: 10, fill: '#9ca3af' }}
+            axisLine={false}
+            tickLine={false}
+            angle={-45}
+            textAnchor="end"
+            height={50}
+          />
+          <YAxis
+            tick={{ fontSize: 10, fill: '#9ca3af' }}
+            axisLine={false}
+            tickLine={false}
+          />
+          <Tooltip
+            contentStyle={{
+              backgroundColor: 'white',
+              border: '1px solid #e5e7eb',
+              borderRadius: '8px',
+              fontSize: '12px',
+              padding: '8px'
+            }}
+            formatter={(value: any) => [value.toFixed(1) + ' t/ha', 'Yield']}
+            cursor={{ stroke: '#22c55e', strokeWidth: 1, strokeDasharray: '3 3' }}
+          />
+          <Line
+            type="monotone"
+            dataKey="yield"
+            stroke="#22c55e"
+            strokeWidth={2}
+            dot={{ fill: '#22c55e', r: 3 }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
 
       {/* Recent Seasons */}
-      <div>
-        <div className="text-xs font-medium text-gray-700 mb-2">Recent Seasons</div>
-        <div className="space-y-2">
-          {plotData.time_series.slice(-3).reverse().map((record, idx) => (
-            <div key={idx} className="bg-gray-50 rounded-lg p-2 flex items-center justify-between">
-              <div className="flex-1">
-                <div className="text-xs font-semibold text-gray-800">{record.period}</div>
-                <div className="text-xs text-gray-600">{record.crop}</div>
-              </div>
-              <div className="text-right">
-                <div className="text-sm font-bold text-green-600">{record.yield_tons_per_ha} t/ha</div>
-                <div className="text-xs text-gray-600">KES {record.revenue_kes.toLocaleString()}</div>
-              </div>
+      <div className="mt-4 space-y-1.5">
+        {plotData.time_series.slice(-3).reverse().map((record, idx) => (
+          <div key={idx} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+            <div>
+              <div className="text-xs font-medium text-gray-800">{record.period}</div>
+              <div className="text-xs text-gray-500">{record.crop}</div>
             </div>
-          ))}
-        </div>
+            <div className="text-right">
+              <div className="text-sm font-bold text-green-600">{record.yield_tons_per_ha} t/ha</div>
+              <div className="text-xs text-gray-500">{(record.revenue_kes / 1000).toFixed(0)}K</div>
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* Average Revenue */}
-      <div className="mt-3 pt-3 border-t border-gray-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <DollarSign className="w-4 h-4 text-gray-600" />
-            <span className="text-xs text-gray-600">Avg Revenue</span>
-          </div>
-          <span className="text-sm font-bold text-gray-800">
-            KES {plotData.avg_revenue.toLocaleString()}
-          </span>
-        </div>
+      {/* Footer */}
+      <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400 text-center">
+        {plotData.total_seasons} seasons tracked
       </div>
     </div>
   );
