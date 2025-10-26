@@ -29,15 +29,28 @@ def setup_google_credentials():
         if os.environ.get('GOOGLE_APPLICATION_CREDENTIALS'):
             logger.info("✅ Using Cloud Run service account credentials")
             os.environ['GOOGLE_CLOUD_PROJECT'] = 'ascendant-woods-462020-n0'
+            os.environ['GOOGLE_CLOUD_LOCATION'] = 'us-central1'
             return
         
         # Local development fallback
         logger.info("🔧 Setting up local development credentials")
         os.environ['GOOGLE_CLOUD_PROJECT'] = 'ascendant-woods-462020-n0'
+        os.environ['GOOGLE_CLOUD_LOCATION'] = 'us-central1'
         
     except Exception as e:
         logger.error(f"Failed to setup Google credentials: {e}")
         os.environ['GOOGLE_CLOUD_PROJECT'] = 'ascendant-woods-462020-n0'
+        os.environ['GOOGLE_CLOUD_LOCATION'] = 'us-central1'
+
+def validate_google_credentials():
+    """Validate that required Google credentials are properly set"""
+    required_vars = ['GOOGLE_CLOUD_PROJECT', 'GOOGLE_CLOUD_LOCATION']
+    missing = [var for var in required_vars if not os.environ.get(var)]
+    
+    if missing:
+        raise ValueError(f"Missing required Google Cloud environment variables: {', '.join(missing)}")
+    
+    logger.info(f"✅ Google Cloud configured: Project={os.environ['GOOGLE_CLOUD_PROJECT']}, Location={os.environ['GOOGLE_CLOUD_LOCATION']}")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -45,6 +58,7 @@ logger = logging.getLogger(__name__)
 
 # Setup credentials before anything else
 setup_google_credentials()
+validate_google_credentials()
 
 app = FastAPI(title="Bloom Backend API", version="1.0.0")
 
