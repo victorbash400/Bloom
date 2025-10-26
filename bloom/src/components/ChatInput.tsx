@@ -133,7 +133,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           f.id === fileId ? { ...f, status: 'processing' } : f
         ));
 
-        const response = await fetch('http://localhost:8000/upload-pdf', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/upload-pdf`, {
           method: 'POST',
           body: formData,
         });
