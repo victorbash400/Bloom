@@ -68,9 +68,12 @@ class VectorSearchTool:
     def _get_access_token(self):
         """Get GCP access token for Vector Search authentication"""
         try:
-            cmd = ["powershell", "-Command", f"& '{GCLOUD_PATH}' auth print-access-token"]
-            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-            return result.stdout.strip()
+            from google.auth import default
+            from google.auth.transport.requests import Request
+            
+            credentials, project = default()
+            credentials.refresh(Request())
+            return credentials.token
         except Exception as e:
             print(f"Error getting access token: {e}")
             return None

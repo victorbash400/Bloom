@@ -21,9 +21,30 @@ import io
 # Load environment variables
 load_dotenv()
 
+# Setup Google credentials (same as your past project)
+def setup_google_credentials():
+    """Setup Google credentials for Cloud Run deployment"""
+    try:
+        # Check if running in Cloud Run (has GOOGLE_APPLICATION_CREDENTIALS set)
+        if os.environ.get('GOOGLE_APPLICATION_CREDENTIALS'):
+            logger.info("✅ Using Cloud Run service account credentials")
+            os.environ['GOOGLE_CLOUD_PROJECT'] = 'ascendant-woods-462020-n0'
+            return
+        
+        # Local development fallback
+        logger.info("🔧 Setting up local development credentials")
+        os.environ['GOOGLE_CLOUD_PROJECT'] = 'ascendant-woods-462020-n0'
+        
+    except Exception as e:
+        logger.error(f"Failed to setup Google credentials: {e}")
+        os.environ['GOOGLE_CLOUD_PROJECT'] = 'ascendant-woods-462020-n0'
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Setup credentials before anything else
+setup_google_credentials()
 
 app = FastAPI(title="Bloom Backend API", version="1.0.0")
 
