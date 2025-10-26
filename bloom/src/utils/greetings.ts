@@ -1,32 +1,47 @@
-export interface Greeting {
-  message: string;
-  subtitle: string;
-}
-
-const greetings: Record<string, Greeting[]> = {
+const greetings: Record<string, string[]> = {
   morning: [
-    { message: "Good morning!", subtitle: "Ready to plan your day on the farm?" },
-    { message: "Rise and shine!", subtitle: "Let's check on your crops" },
-    { message: "Morning!", subtitle: "What's on the agenda today?" },
+    "Good morning!",
+    "Rise and shine!",
+    "Morning!",
+    "Top of the morning!",
+    "Bonjour!",
+    "Buenos días!",
+    "Guten Morgen!",
+    "Ohayō!",
   ],
   afternoon: [
-    { message: "Good afternoon!", subtitle: "How are things looking today?" },
-    { message: "Hey there!", subtitle: "Need help with anything?" },
-    { message: "Afternoon!", subtitle: "Let's see what we can do" },
+    "Good afternoon!",
+    "Hey there!",
+    "Afternoon!",
+    "Howdy!",
+    "Buenas tardes!",
+    "Bon après-midi!",
+    "Konnichiwa!",
+    "Salaam!",
   ],
   evening: [
-    { message: "Good evening!", subtitle: "How did the day go?" },
-    { message: "Evening!", subtitle: "Time to review today's progress" },
-    { message: "Hey!", subtitle: "Let's wrap up the day" },
+    "Good evening!",
+    "Evening!",
+    "Hey!",
+    "Buenas noches!",
+    "Bonsoir!",
+    "Guten Abend!",
+    "Konbanwa!",
+    "Shalom!",
   ],
   night: [
-    { message: "Hola!", subtitle: "Planning for tomorrow?" },
-    { message: "Hello!", subtitle: "Still working late?" },
-    { message: "Hey there!", subtitle: "What can I help you with?" },
+    "Hello!",
+    "Hey there!",
+    "Hola!",
+    "Namaste!",
+    "Ciao!",
+    "Salut!",
+    "Aloha!",
+    "Jambo!",
   ],
 };
 
-export const getGreeting = (): Greeting => {
+export const getGreeting = (): string => {
   const hour = new Date().getHours();
   
   let timeOfDay: keyof typeof greetings;

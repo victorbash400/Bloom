@@ -21,7 +21,7 @@ def create_widget(widget_type: str, widget_data: str) -> str:
     # Return a special format that the backend can detect
     widget_response = {
         "widget_type": widget_type,
-        "widget_data": widget_data,
+        "widget_data": json.loads(widget_data),
         "message": f"Widget created successfully: {widget_type} widget is now displayed in the sidebar."
     }
     

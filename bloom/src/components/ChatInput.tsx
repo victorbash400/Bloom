@@ -244,9 +244,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
         <div className="absolute top-2 left-0 right-0 flex items-center justify-center">
           <div className="flex items-center gap-2 text-xs text-white font-medium">
             <span>{getAgentDisplay(currentAgent)}</span>
-            {currentAgent && currentAgent !== 'bloom_main_agent' && (
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            )}
           </div>
         </div>
 

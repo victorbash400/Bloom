@@ -4,6 +4,7 @@ from agents.planner_agent import planner_agent
 from agents.farm_agent import farm_agent
 from agents.market_agent import market_agent
 from tools.search_tool import get_search_tool
+from tools.report_tool import generate_farm_report
 
 def search_web(query: str) -> str:
     """Search the web for current information with citations"""
@@ -50,12 +51,41 @@ root_agent = Agent(
   * Expense tracking and financial records
   * Market demand analysis
 
-Your Role:
+Your Role: (this is important and must never be ignored always announce before transferring to an agent before using that tool always announce yeah? never fail to announce)
 1. For general questions - respond directly with helpful information
-2. For SIMPLE questions needing ONE specialist - announce and transfer immediately (e.g., "I'm handing you over to the Farm Agent for that.")
+2. For SIMPLE questions needing ONE specialist - announce in a  friendly way which specialist u are calling and why then  transfer immediately (e.g., "I'm handing you over to the Farm Agent for thats specific question (use a beter nicer wording according to context).")
 3. For COMPLEX questions needing MULTIPLE specialists - break down the question, explain what you'll check, then transfer to the MOST IMPORTANT specialist first. They will provide their answer, then you can synthesize.
 4. For questions requiring current information - announce and call `search_web` function
-5. Always be helpful, practical, and farmer-focused
+5. For REPORT GENERATION requests:
+   - First announce which data you will need and what process you will use (always announce before any tool call or delegation)
+   - Then, gather ALL necessary data by transferring to specialist agents
+   - Use web search to supplement with current research, best practices, and additional context
+   - Compile the data into a comprehensive, professional format
+   - Then call `generate_farm_report(report_content=<formatted_text>)` as the FINAL step
+   - The tool will return a download link for the farmer
+   
+   **Report Formatting Guidelines:**
+   - Structure the report logically based on the request and data gathered (decide sections yourself)
+   - Use markdown formatting: # for main title, ## for sections, ### for subsections
+   - Make reports comprehensive and detailed (aim for 2-3 pages worth of content)
+   - Use professional, clear language with proper paragraphing
+   
+   **Formatting Tools Available:**
+   - Use **bold** for emphasis on key terms and important data
+   - Use tables for structured data (crop status, prices, financial summaries, comparisons):
+     | Column 1 | Column 2 | Column 3 |
+     |----------|----------|----------|
+     | Data     | Data     | Data     |
+   - Use bullet points (-) for lists of items
+   - Use numbered lists (1. 2. 3.) for sequential steps or priorities
+   - Add horizontal rules (---) to separate major sections if needed
+   - Include specific numbers, dates, and metrics (not vague statements)
+   
+   **Always Include a Citations/Sources Section:**
+   - End every report with a references section (## References, ## Sources, or ## Data Sources)
+   - List all data sources: which specialist agents were consulted, web searches performed, dates
+   - Format citations clearly for credibility and traceability
+6. Always be helpful, practical, and farmer-focused
 
 **Examples of Multi-Specialist Questions:**
 - "Should I plant maize based on soil and market prices?" → Transfer to Planner (they can check profitability which includes market factors)
@@ -104,5 +134,8 @@ The ADK engine will automatically route queries to the right specialist agents b
         farm_agent, 
         market_agent
     ],
-    tools=[FunctionTool(search_web)]
+    tools=[
+        FunctionTool(search_web),
+        FunctionTool(generate_farm_report)
+    ]
 )

@@ -64,11 +64,9 @@ const ChatSection: React.FC<ChatSectionProps> = ({
   currentAgent = null,
 }) => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
-  const [greeting, setGreeting] = useState({ message: "Hello!", subtitle: "What can I help you with?" });
-  const [mounted, setMounted] = useState(false);
+  const [greeting, setGreeting] = useState("Hello!");
 
   useEffect(() => {
-    setMounted(true);
     setGreeting(getGreeting());
   }, []);
 
@@ -128,15 +126,14 @@ const ChatSection: React.FC<ChatSectionProps> = ({
       <>
         <div
           className="h-screen flex flex-col items-center justify-center relative"
-          style={{ backgroundImage: 'url(/welcome.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
+          style={{ backgroundImage: 'url(/darker.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}
         >
           <div className="absolute top-6 left-6 flex items-end gap-3">
             <Image src="/bloom_logo.svg" alt="Bloom Logo" width={32} height={32} />
             <span className="text-xl font-bold text-gray-800">Bloom</span>
           </div>
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-800 mb-2">{greeting.message}</h1>
-            <p className="text-gray-600">{greeting.subtitle}</p>
+            <h1 className="text-4xl font-bold text-gray-800">{greeting}</h1>
           </div>
 
           {/* Suggestion cards around the chat input */}
@@ -192,8 +189,8 @@ const ChatSection: React.FC<ChatSectionProps> = ({
                   <div className="flex items-start space-x-3">
                     <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center">
                       <div
-                        className="rounded-full"
-                        style={{ width: '8px', height: '8px', backgroundColor: '#00311e', animation: 'scale 1.5s ease-in-out infinite' }}
+                        className="rounded-full animate-pulse-scale"
+                        style={{ width: '8px', height: '8px', backgroundColor: '#00311e' }}
                       ></div>
                     </div>
                   </div>
