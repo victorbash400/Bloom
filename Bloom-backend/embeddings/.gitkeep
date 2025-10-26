@@ -1,0 +1,2 @@
+# This file ensures the embeddings directory is tracked by git
+# Generated embedding files (*.json, *.jsonl) are excluded via .gitignore

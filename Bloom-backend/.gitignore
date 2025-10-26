@@ -35,9 +35,10 @@ venv.bak/
 .env.test.local
 .env.production.local
 
-# Google Cloud credentials
+# Google Cloud credentials (service account keys)
 ascendant-woods-462020-n0-78d818c9658e.json
-*.json
+*-service-account*.json
+*-key.json
 
 # IDE
 .vscode/
@@ -62,8 +63,13 @@ htmlcov/
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# Development folders (contain sensitive data and test files)
-guides/
-tests/
-setup/
-generated_data/
+# Generated embeddings (exclude vector embeddings, keep folder)
+embeddings/*.json
+embeddings/*.jsonl
+
+# Generated reports (exclude PDFs, keep folder)
+reports/*.pdf
+
+# Keep the folders themselves with .gitkeep files
+!embeddings/.gitkeep
+!reports/.gitkeep
