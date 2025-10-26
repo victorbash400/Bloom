@@ -14,6 +14,7 @@ from google.genai.types import Content, Part
 from pydantic import BaseModel
 from typing import Optional
 from agents.mainagent import root_agent
+from utils.json_parser import extract_widget_data, extract_citations
 import PyPDF2
 import io
 
@@ -148,33 +149,23 @@ async def chat_stream(request: ChatRequest):
                         elif hasattr(part, 'function_response') and part.function_response:
                             # Check if this is a search_web response and extract citations
                             if part.function_response.name == 'search_web':
-                                try:
-                                    # Parse the JSON response from search_web function
-                                    search_response = json.loads(part.function_response.response.get('result', '{}'))
-                                    if isinstance(search_response, dict) and 'citations' in search_response:
-                                        citations.extend(search_response['citations'])
-                                        logger.info(f"📚 Citations extracted: {len(search_response['citations'])} sources")
-                                except Exception as e:
-                                    logger.warning(f"Failed to extract citations: {e}")
+                                extracted_citations = extract_citations(part.function_response)
+                                if extracted_citations:
+                                    citations.extend(extracted_citations)
+                                    logger.info(f"📚 Citations extracted: {len(extracted_citations)} sources")
                             
                             # Check if this is a create_widget response and extract widget data
                             elif part.function_response.name == 'create_widget':
-                                try:
-                                    # Parse the JSON response from create_widget function
-                                    widget_response = json.loads(part.function_response.response.get('result', '{}'))
-                                    if isinstance(widget_response, dict) and 'widget_type' in widget_response:
-                                        widget_data = widget_response['widget_data']
-                                        
-                                        # Send widget immediately
-                                        widget_event = {
-                                            'type': 'widget',
-                                            'widget_type': widget_response['widget_type'],
-                                            'widget_data': widget_data
-                                        }
-                                        yield f"data: {json.dumps(widget_event)}\n\n"
-                                        logger.info(f"🎨 Widget created: {widget_response['widget_type']}")
-                                except Exception as e:
-                                    logger.warning(f"Failed to extract widget: {e}")
+                                widget_response = extract_widget_data(part.function_response)
+                                if widget_response:
+                                    # Send widget immediately
+                                    widget_event = {
+                                        'type': 'widget',
+                                        'widget_type': widget_response['widget_type'],
+                                        'widget_data': widget_response['widget_data']
+                                    }
+                                    yield f"data: {json.dumps(widget_event)}\n\n"
+                                    logger.info(f"🎨 Widget created: {widget_response['widget_type']}")
                         
                         elif hasattr(part, 'text') and part.text and event.partial:
                             content = part.text
@@ -268,6 +259,30 @@ async def download_report(filename: str):
         media_type='application/pdf',
         filename=filename
     )
+
+@app.post("/api/reports/clear")
+async def clear_reports():
+    """Clear all reports from the reports folder"""
+    try:
+        reports_dir = os.path.join(os.path.dirname(__file__), 'reports')
+        
+        if not os.path.exists(reports_dir):
+            return {"success": True, "message": "Reports directory does not exist"}
+        
+        # Delete all files in the reports directory
+        deleted_count = 0
+        for filename in os.listdir(reports_dir):
+            filepath = os.path.join(reports_dir, filename)
+            if os.path.isfile(filepath):
+                os.remove(filepath)
+                deleted_count += 1
+        
+        logger.info(f"🗑️ Cleared {deleted_count} reports from reports folder")
+        return {"success": True, "message": f"Cleared {deleted_count} reports", "count": deleted_count}
+    
+    except Exception as e:
+        logger.error(f"Error clearing reports: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error clearing reports: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn

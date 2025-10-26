@@ -100,9 +100,9 @@ class HTMLToReportLab(HTMLParser):
                     ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
                     ('VALIGN', (0, 0), (-1, -1), 'TOP'),
                     ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                    ('FONTSIZE', (0, 0), (-1, 0), 9),
-                    ('FONTSIZE', (0, 1), (-1, -1), 8),
-                    ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+                    ('FONTSIZE', (0, 0), (-1, 0), 12),
+                    ('FONTSIZE', (0, 1), (-1, -1), 11),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
                     ('TOPPADDING', (0, 0), (-1, -1), 6),
                     ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
                     ('BACKGROUND', (0, 1), (-1, -1), colors.white),
@@ -150,8 +150,12 @@ def generate_farm_report(report_content: str) -> str:
         filename = f"farm_report_{timestamp}.pdf"
         filepath = os.path.join(REPORTS_DIR, filename)
         
+        # Clean up markdown content (fix common formatting issues)
+        # Remove backslash escapes in tables that break rendering
+        cleaned_content = report_content.replace('|\\', '|').replace('\\\n', '\n')
+        
         # Convert markdown to HTML
-        html_content = markdown2.markdown(report_content, extras=['tables', 'fenced-code-blocks'])
+        html_content = markdown2.markdown(cleaned_content, extras=['tables', 'fenced-code-blocks'])
         
         # Create PDF document
         doc = SimpleDocTemplate(filepath, pagesize=letter,
@@ -173,16 +177,19 @@ def generate_farm_report(report_content: str) -> str:
         ))
         
         styles['Heading1'].textColor = colors.HexColor('#00311e')
-        styles['Heading1'].fontSize = 18
+        styles['Heading1'].fontSize = 20
         styles['Heading1'].spaceAfter = 12
         
         styles['Heading2'].textColor = colors.HexColor('#00311e')
-        styles['Heading2'].fontSize = 14
+        styles['Heading2'].fontSize = 16
         styles['Heading2'].spaceAfter = 10
         
         styles['Heading3'].textColor = colors.HexColor('#00311e')
-        styles['Heading3'].fontSize = 12
+        styles['Heading3'].fontSize = 14
         styles['Heading3'].spaceAfter = 8
+        
+        styles['Normal'].fontSize = 11
+        styles['Normal'].leading = 14
         
         # Build story
         story = []

@@ -278,7 +278,7 @@ export default function Home() {
 
   };
 
-  const handleNewChat = () => {
+  const handleNewChat = async () => {
     setMessages([]);
     setIsLoading(false);
     setSessionId(null);
@@ -286,6 +286,16 @@ export default function Home() {
     setWidgets([]);
     setSelectedWidgetIndex(0);
     setCurrentAgent(null);
+
+    // Clear reports folder on the backend
+    try {
+      await fetch(`${API_BASE_URL}/api/reports/clear`, {
+        method: 'POST',
+      });
+      console.log('Reports folder cleared');
+    } catch (error) {
+      console.error('Error clearing reports:', error);
+    }
   };
 
   return (
