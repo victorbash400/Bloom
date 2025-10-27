@@ -269,7 +269,7 @@ const WeatherTodayWidget: React.FC<WeatherTodayWidgetProps> = ({ data }) => {
                 />
                 <YAxis hide />
                 <Tooltip
-                  formatter={(_value, _name, props) => [props.payload.condition, 'Condition']}
+                  formatter={(value, name, props) => [props.payload?.condition || value, name]}
                   labelFormatter={(label) => `Activity: ${label}`}
                 />
                 <Bar
