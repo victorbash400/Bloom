@@ -219,10 +219,13 @@ def generate_farm_report(report_content: str) -> str:
         # Build PDF
         doc.build(story)
         
+        # Get the base URL from environment or use default
+        base_url = os.environ.get('API_BASE_URL', 'https://bloomapi-643988926049.europe-west1.run.app')
+        
         return json.dumps({
             "report_generated": True,
             "filename": filename,
-            "download_url": f"http://localhost:8000/api/reports/{filename}",
+            "download_url": f"{base_url}/api/reports/{filename}",
             "message": "Report generated successfully! Click the link above to download."
         })
     
