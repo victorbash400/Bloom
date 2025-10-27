@@ -50,6 +50,17 @@ def validate_google_credentials():
     if missing:
         raise ValueError(f"Missing required Google Cloud environment variables: {', '.join(missing)}")
     
+    # Validate service account file exists
+    credentials_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+    if credentials_path:
+        if not os.path.exists(credentials_path):
+            raise FileNotFoundError(f"Google service account file not found at: {credentials_path}")
+        if not os.path.isfile(credentials_path):
+            raise ValueError(f"Google service account path is not a file: {credentials_path}")
+        logger.info(f"✅ Service account file found: {credentials_path}")
+    else:
+        logger.warning("⚠️ GOOGLE_APPLICATION_CREDENTIALS not set, using default credentials")
+    
     logger.info(f"✅ Google Cloud configured: Project={os.environ['GOOGLE_CLOUD_PROJECT']}, Location={os.environ['GOOGLE_CLOUD_LOCATION']}")
 
 # Configure logging
